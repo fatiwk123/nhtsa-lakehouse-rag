@@ -1,0 +1,36 @@
+name: nhtsa
+version: "1.0.0"
+config-version: 2
+profile: nhtsa
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+target-path: target
+clean-targets: [target]
+
+# Bronze sources are loaded from Iceberg by the plugin; create their schema once to avoid
+# concurrent "create schema" conflicts between threads.
+on-run-start:
+  - "create schema if not exists bronze"
+
+models:
+  nhtsa:
+    silver:
+      +schema: silver
+      +meta:
+        dagster:
+          group: silver
+    gold:
+      +schema: gold
+      +materialized: table
+      +meta:
+        dagster:
+          group: gold
+
+seeds:
+  nhtsa:
+    +schema: reference
+    +meta:
+      dagster:
+        group: reference

@@ -12,6 +12,8 @@ x-app: &app
       condition: service_healthy
     minio:
       condition: service_healthy
+  volumes:
+    - duckdb_data:/data/duckdb
 
 services:
   postgres:
@@ -47,10 +49,11 @@ services:
       timeout: 5s
       retries: 20
 
-  # One-shot job: lands raw NHTSA data in bronze on `docker compose up`.
-  ingest:
+  # One-shot run of the full pipeline on `docker compose up`
+  # (bronze -> dbt silver/gold -> Soda -> Iceberg). Recorded in Dagster like any other run.
+  pipeline:
     <<: *app
-    command: ["python", "-m", "ingestion"]
+    command: ["dagster", "job", "execute", "-m", "orchestration.definitions", "-j", "daily_pipeline"]
     restart: "no"
 
   dagster-webserver:
@@ -66,3 +69,4 @@ services:
 volumes:
   pg_data:
   minio_data:
+  duckdb_data:

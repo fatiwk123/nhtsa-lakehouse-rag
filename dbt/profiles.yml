@@ -1,0 +1,21 @@
+nhtsa:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('DUCKDB_PATH', '/data/duckdb/lakehouse.duckdb') }}"
+      threads: 4
+      settings:
+        TimeZone: UTC
+      plugins:
+        # Reads bronze Iceberg tables through pyiceberg (SQL catalog in Postgres, files on MinIO).
+        - module: iceberg
+          config:
+            catalog: lakehouse
+            type: sql
+            uri: "postgresql+psycopg2://{{ env_var('POSTGRES_USER', 'lakehouse') }}:{{ env_var('POSTGRES_PASSWORD', 'lakehouse') }}@{{ env_var('POSTGRES_HOST', 'localhost') }}:{{ env_var('POSTGRES_PORT', '5432') }}/{{ env_var('ICEBERG_CATALOG_DB', 'lakehouse') }}"
+            warehouse: "s3://{{ env_var('LAKEHOUSE_BUCKET', 'lakehouse') }}/warehouse"
+            s3.endpoint: "{{ env_var('MINIO_ENDPOINT', 'http://localhost:9000') }}"
+            s3.access-key-id: "{{ env_var('MINIO_ACCESS_KEY', 'minioadmin') }}"
+            s3.secret-access-key: "{{ env_var('MINIO_SECRET_KEY', 'minioadmin') }}"
+            s3.region: us-east-1

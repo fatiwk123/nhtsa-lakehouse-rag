@@ -30,7 +30,7 @@ from pyiceberg.table import Table
 from pyiceberg.transforms import IdentityTransform
 from pyiceberg.types import DateType, IntegerType, NestedField, StringType, TimestamptzType
 
-from ingestion.catalog import get_catalog, get_object_store
+from ingestion.catalog import ensure_namespace, get_catalog, get_object_store
 from ingestion.config import Settings
 from ingestion.nhtsa_client import SOURCES, NhtsaClient, SourceSpec
 
@@ -131,7 +131,7 @@ def build_rows(
 
 
 def ensure_table(catalog: Catalog, source: SourceSpec) -> Table:
-    catalog.create_namespace_if_not_exists(NAMESPACE)
+    ensure_namespace(catalog, NAMESPACE)
     return catalog.create_table_if_not_exists(
         f"{NAMESPACE}.nhtsa_{source.name}",
         schema=ICEBERG_SCHEMA,

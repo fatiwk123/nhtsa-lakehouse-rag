@@ -1,0 +1,40 @@
+# Soda checks on the gold layer. A failing check fails the Dagster run (and triggers the alert sensor).
+
+checks for gold.fct_recalls:
+  - row_count > 0
+  - missing_count(campaign_number) = 0
+  - missing_count(report_received_date) = 0
+  - missing_count(category) = 0
+  - duplicate_count(recall_key) = 0
+  - freshness(ingested_at) < 2d
+
+checks for gold.fct_complaints:
+  - row_count > 0
+  - missing_count(odi_number) = 0
+  - missing_count(complaint_filed_date) = 0
+  - duplicate_count(complaint_vehicle_key) = 0
+  - freshness(ingested_at) < 2d
+  - invalid_count(number_of_injuries) = 0:
+      valid min: 0
+  - invalid_count(number_of_deaths) = 0:
+      valid min: 0
+  - failed rows:
+      name: No complaint filed in the future
+      fail query: |
+        select odi_number, complaint_filed_date
+        from gold.fct_complaints
+        where complaint_filed_date > current_date + interval 1 day
+
+checks for gold.dim_vehicle:
+  - duplicate_count(vehicle_key) = 0
+  - invalid_count(model_year) = 0:
+      valid min: 1950
+      valid max: 2030
+
+checks for gold.dim_component:
+  - duplicate_count(component_group) = 0
+  - missing_count(category) = 0
+
+checks for gold.bridge_complaint_component:
+  - row_count > 0
+  - missing_count(component_key) = 0

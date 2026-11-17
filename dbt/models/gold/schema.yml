@@ -1,0 +1,67 @@
+version: 2
+
+models:
+  - name: dim_vehicle
+    description: One row per (make, model, model_year) seen in recalls or complaints.
+    columns:
+      - name: vehicle_key
+        tests: [unique, not_null]
+      - name: model_year
+        tests:
+          - not_null
+          - value_in_range:
+              min_value: 1950
+              max_value: 2030
+
+  - name: dim_component
+    description: Top-level NHTSA component groups mapped to a business category (EN code + FR label).
+    columns:
+      - name: component_key
+        tests: [unique, not_null]
+      - name: component_group
+        tests: [unique, not_null]
+      - name: category
+        tests:
+          - not_null
+          - accepted_values:
+              values: [SEAT_BELTS, CHILD_SEAT, BRAKES, ENGINE, POWERTRAIN, FUEL_SYSTEM, ELECTRIC_PROPULSION,
+                       ELECTRICAL, AIRBAGS, STEERING, SUSPENSION, TIRES_WHEELS, STRUCTURE, SEATS, VISIBILITY,
+                       ADAS, SPEED_CONTROL, LATCHES_LOCKS, EQUIPMENT, LIGHTING, OTHER]
+
+  - name: fct_recalls
+    description: >
+      Recall fact, one row per (campaign, vehicle). A campaign covering several models/years has several rows:
+      use count(distinct campaign_number) to count recalls.
+    columns:
+      - name: recall_key
+        tests: [unique, not_null]
+      - name: vehicle_key
+        tests:
+          - not_null
+          - relationships: {to: ref('dim_vehicle'), field: vehicle_key}
+      - name: component_key
+        tests:
+          - not_null
+          - relationships: {to: ref('dim_component'), field: component_key}
+
+  - name: fct_complaints
+    description: >
+      Complaint fact, one row per (complaint, vehicle). A complaint can concern several vehicles:
+      use count(distinct odi_number) to count complaints. Components are in bridge_complaint_component.
+    columns:
+      - name: complaint_vehicle_key
+        tests: [unique, not_null]
+      - name: vehicle_key
+        tests:
+          - not_null
+          - relationships: {to: ref('dim_vehicle'), field: vehicle_key}
+
+  - name: bridge_complaint_component
+    description: Many-to-many link between complaints (per vehicle) and component groups.
+    columns:
+      - name: complaint_vehicle_key
+        tests:
+          - not_null
+          - relationships: {to: ref('fct_complaints'), field: complaint_vehicle_key}
+      - name: component_key
+        tests: [not_null]

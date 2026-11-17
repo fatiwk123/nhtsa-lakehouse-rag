@@ -1,0 +1,17 @@
+version: 2
+
+sources:
+  - name: bronze
+    description: Raw NHTSA records stored in Iceberg (written by the ingestion step).
+    meta:
+      plugin: iceberg
+      iceberg_table: "bronze.{identifier}"
+    tables:
+      - name: nhtsa_recalls
+        meta:
+          dagster:
+            asset_key: ["bronze_nhtsa_recalls"]
+      - name: nhtsa_complaints
+        meta:
+          dagster:
+            asset_key: ["bronze_nhtsa_complaints"]

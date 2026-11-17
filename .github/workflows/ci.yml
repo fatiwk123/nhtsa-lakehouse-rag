@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  tests:
+  unit-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,3 +16,22 @@ jobs:
           cache: pip
       - run: pip install -r requirements-dev.txt
       - run: pytest -q
+      - name: dbt parse (project compiles)
+        working-directory: dbt
+        run: dbt parse --profiles-dir .
+
+  pipeline:
+    # End-to-end run on a small scope: NHTSA API -> bronze Iceberg -> dbt build (models + tests) -> Soda -> Iceberg.
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure a small ingestion scope
+        run: |
+          cp .env.example .env
+          sed -i 's/^NHTSA_MODEL_YEARS=.*/NHTSA_MODEL_YEARS=2019/; s/^NHTSA_MODELS=.*/NHTSA_MODELS=GOLF,JETTA/' .env
+      - name: Run the full pipeline
+        run: docker compose up --build --exit-code-from pipeline pipeline
+      - name: Logs on failure
+        if: failure()
+        run: docker compose logs --no-color

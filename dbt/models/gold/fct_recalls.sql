@@ -1,0 +1,26 @@
+select
+    r.recall_key,
+    r.campaign_number,
+    {{ vehicle_key('r.make', 'r.model', 'r.model_year') }} as vehicle_key,
+    c.component_key,
+    r.make,
+    r.model,
+    r.model_year,
+    r.component,
+    r.component_group,
+    c.category,
+    c.category_fr,
+    r.report_received_date,
+    r.manufacturer,
+    r.action_number,
+    r.summary,
+    r.consequence,
+    r.remedy,
+    r.notes,
+    r.park_it,
+    r.park_outside,
+    r.over_the_air_update,
+    r.row_hash,
+    r.ingested_at
+from {{ ref('silver_recalls') }} r
+left join {{ ref('dim_component') }} c on c.component_group = r.component_group

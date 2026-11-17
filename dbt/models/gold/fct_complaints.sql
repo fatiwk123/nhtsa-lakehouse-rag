@@ -1,0 +1,20 @@
+select
+    complaint_vehicle_key,
+    odi_number,
+    {{ vehicle_key('make', 'model', 'model_year') }} as vehicle_key,
+    make,
+    model,
+    model_year,
+    complaint_filed_date,
+    incident_date,
+    crash,
+    fire,
+    number_of_injuries,
+    number_of_deaths,
+    vin_prefix,
+    components_raw,
+    summary,
+    manufacturer,
+    row_hash,
+    ingested_at
+from {{ ref('silver_complaints') }}

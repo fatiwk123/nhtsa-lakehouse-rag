@@ -6,6 +6,25 @@ Assistant automobile qui répond à des questions **textuelles** et **chiffrées
 > - « Quels rappels concernent le freinage des Golf 2019 ? »
 > - « Combien de plaintes moteur pour Renault en 2025 ? »
 
+## Démarrage rapide
+
+```bash
+cp .env.example .env
+docker compose up -d --build
+docker compose logs -f ingest     # chargement bronze (~15 s pour VW 2018-2020)
+```
+
+| Service | URL |
+|---|---|
+| Dagster | http://localhost:3000 |
+| Console MinIO | http://localhost:9001 (minioadmin / minioadmin) |
+| Postgres | localhost:5432 (lakehouse / lakehouse) |
+
+Le périmètre (constructeurs, années, modèles) se règle dans `.env`. Relancer l'ingestion :
+`docker compose run --rm ingest`, ou matérialiser le job `bronze_ingestion` dans Dagster.
+
+Tests : `pip install -r requirements-dev.txt && pytest`
+
 ## Sources
 
 - **API publique NHTSA** : rappels (recalls) et plaintes (complaints), mises à jour régulièrement → vrai incrémental.
@@ -48,7 +67,7 @@ PDFs ──────┘                 │  dbt-duckdb + Soda
 
 ## Feuille de route
 
-- [ ] **Phase 1 — Socle** : docker-compose (MinIO, Postgres + pgvector, Dagster), ingestion NHTSA → bronze (JSON brut horodaté), écriture Iceberg. *Livrable : `docker compose up` charge les données brutes.*
+- [x] **Phase 1 — Socle** : docker-compose (MinIO, Postgres + pgvector, Dagster), ingestion NHTSA → bronze (JSON brut horodaté), écriture Iceberg. *Livrable : `docker compose up` charge les données brutes.*
 - [ ] **Phase 2 — Transformations & qualité** : silver (nettoyage, normalisation constructeur/modèle/année, dédoublonnage), gold (faits rappels, faits plaintes, dimensions véhicule/composant), Soda (nulls, unicité, fraîcheur), tests dbt en CI, assets Dagster + schedule quotidien incrémental. *Livrable : pipeline autonome avec alerte qualité.*
 - [ ] **Phase 3 — Indexation RAG** : documents depuis le gold (1 rappel = 1 document) et les PDFs (PyMuPDF), 2 stratégies de chunking, embeddings dans pgvector, BM25 via tsvector, ré-indexation incrémentale par hash de contenu. *Livrable : index toujours synchronisé avec le lakehouse.*
 - [ ] **Phase 4 — Assistant** : retrieval hybride (RRF) + reranking cross-encoder, citations obligatoires, « je ne sais pas » sous un seuil (ROC), agent à 2 outils (`search_docs`, `query_sql` en lecture seule sur tables autorisées), FastAPI + Streamlit.
@@ -64,10 +83,28 @@ PDFs ──────┘                 │  dbt-duckdb + Soda
 
 Le différenciant : **l'incrémental de bout en bout** (nouvelle donnée → transformée → contrôlée → indexée) et **l'évaluation chiffrée**.
 
+## Couche bronze (phase 1)
+
+1. Chaque appel API est déposé tel quel dans MinIO :
+   `s3://lakehouse/raw/nhtsa/{recalls|complaints}/ingest_date=YYYY-MM-DD/make=.../{modele}_{annee}_{ingestion_id}.json`
+2. Chaque enregistrement devient une ligne des tables Iceberg `bronze.nhtsa_recalls` et `bronze.nhtsa_complaints`
+   (catalog SQL dans Postgres, fichiers dans `s3://lakehouse/warehouse`, partition par `ingest_date`) :
+   `payload` (JSON brut) + lignage (`ingestion_id`, `ingested_at`, `request_url`, `raw_file`).
+3. **Incrémental** : `row_hash` = SHA-256 du véhicule interrogé et du payload. Seules les lignes nouvelles ou modifiées sont ajoutées ; un 2ᵉ passage identique ajoute 0 ligne.
+
+Premier chargement (Volkswagen 2018-2020) : 141 rappels et 3 242 plaintes.
+
+## Limites connues
+
+- NHTSA ne couvre que les véhicules vendus aux États-Unis : pas de données Renault, par exemple. Les constructeurs européens présents sont notamment Volkswagen, Audi, BMW, Mercedes-Benz et Volvo.
+- Les images MinIO officielles ne sont plus publiées publiquement ; la stack utilise l'image figée `bitnamilegacy/minio` (développement local uniquement).
+
 ## Structure
 
 ```
 ingestion/      scripts d'ingestion NHTSA et PDFs → bronze
+dagster_home/   configuration de l'instance et du workspace Dagster
+tests/          tests unitaires (pytest, en CI)
 dbt/            modèles silver / gold
 quality/        contrôles Soda
 orchestration/  assets et schedules Dagster
@@ -75,7 +112,7 @@ rag/            chunking, embeddings, indexation, retrieval
 agent/          agent, outils, API FastAPI
 ui/             application Streamlit
 eval/           jeu de test et scripts d'évaluation
-infra/          docker-compose, Terraform
+infra/          init Postgres, Terraform
 data/pdfs/      PDFs techniques (non versionnés)
 ```
 

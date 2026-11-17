@@ -1,0 +1,68 @@
+name: nhtsa-lakehouse
+
+x-app: &app
+  build: .
+  image: nhtsa-lakehouse-app:dev
+  env_file: .env
+  environment:
+    POSTGRES_HOST: postgres
+    MINIO_ENDPOINT: http://minio:9000
+  depends_on:
+    postgres:
+      condition: service_healthy
+    minio:
+      condition: service_healthy
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    env_file: .env
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./infra/postgres/init.sh:/docker-entrypoint-initdb.d/init.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  minio:
+    # Official MinIO images are no longer published publicly; Bitnami's frozen
+    # build is used for local development.
+    image: bitnamilegacy/minio:2025.4.22
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+      MINIO_DEFAULT_BUCKETS: ${LAKEHOUSE_BUCKET}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/bitnami/minio/data
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # One-shot job: lands raw NHTSA data in bronze on `docker compose up`.
+  ingest:
+    <<: *app
+    command: ["python", "-m", "ingestion"]
+    restart: "no"
+
+  dagster-webserver:
+    <<: *app
+    command: ["dagster-webserver", "-h", "0.0.0.0", "-p", "3000", "-w", "/opt/dagster/home/workspace.yaml"]
+    ports:
+      - "3000:3000"
+
+  dagster-daemon:
+    <<: *app
+    command: ["dagster-daemon", "run", "-w", "/opt/dagster/home/workspace.yaml"]
+
+volumes:
+  pg_data:
+  minio_data:

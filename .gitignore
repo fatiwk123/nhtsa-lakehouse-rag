@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Env / secrets
+.env
+*.env
+!.env.example
+
+# Data
+data/*
+!data/pdfs/
+data/pdfs/*
+!data/pdfs/.gitkeep
+*.duckdb
+*.duckdb.wal
+
+# dbt
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
+
+# Dagster
+.dagster/
+dagster_home/storage/
+dagster_home/logs/
+dagster_home/history/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

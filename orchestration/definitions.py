@@ -1,6 +1,7 @@
-"""Dagster definitions: bronze ingestion -> dbt silver/gold -> Soda -> Iceberg publish.
+"""Dagster definitions:
+bronze ingestion -> dbt silver/gold -> Soda -> Iceberg publish -> recall PDFs -> RAG index (pgvector).
 
-Runs daily; any failure (API, dbt test, Soda check) fails the run and fires the alert sensor.
+Runs daily; any failure (API, dbt test, Soda check, index sync check) fails the run and fires the alert sensor.
 """
 
 import os
@@ -8,6 +9,8 @@ from pathlib import Path
 
 import requests
 from dagster import (
+    AssetCheckResult,
+    AssetCheckSeverity,
     AssetExecutionContext,
     AssetSelection,
     DefaultScheduleStatus,
@@ -19,7 +22,9 @@ from dagster import (
     RunFailureSensorContext,
     ScheduleDefinition,
     asset,
+    asset_check,
     define_asset_job,
+    multiprocess_executor,
     run_failure_sensor,
 )
 from dagster_dbt import DbtCliResource, DbtProject, dbt_assets, get_asset_key_for_model
@@ -27,12 +32,22 @@ from dagster_dbt import DbtCliResource, DbtProject, dbt_assets, get_asset_key_fo
 from ingestion.bronze import run_ingestion
 from ingestion.catalog import get_catalog
 from ingestion.config import Settings
+from ingestion.documents import run_document_ingestion
 from orchestration.publish import publish_layers
 from orchestration.quality import run_soda_scan
+from rag import store as rag_store
+from rag.config import RagSettings
+from rag.indexer import sync_index
 
 DBT_DIR = Path(__file__).resolve().parents[1] / "dbt"
 dbt_project = DbtProject(project_dir=DBT_DIR, profiles_dir=DBT_DIR)
 dbt_project.prepare_if_dev()
+
+# Steps calling the public NHTSA API run one at a time (politeness / rate limits).
+NHTSA_API = {"nhtsa_api": "true"}
+polite_executor = multiprocess_executor.configured(
+    {"tag_concurrency_limits": [{"key": "nhtsa_api", "value": "true", "limit": 1}]}
+)
 
 GOLD_MODELS = ["fct_recalls", "fct_complaints", "dim_vehicle", "dim_component", "bridge_complaint_component"]
 
@@ -53,12 +68,12 @@ def _ingest(source: str) -> MaterializeResult:
     )
 
 
-@asset(group_name="bronze", kinds={"python", "iceberg"}, description="Raw NHTSA recalls (append-only, hash-deduplicated).")
+@asset(group_name="bronze", kinds={"python", "iceberg"}, op_tags=NHTSA_API, description="Raw NHTSA recalls (append-only, hash-deduplicated).")
 def bronze_nhtsa_recalls() -> MaterializeResult:
     return _ingest("recalls")
 
 
-@asset(group_name="bronze", kinds={"python", "iceberg"}, description="Raw NHTSA complaints (append-only, hash-deduplicated).")
+@asset(group_name="bronze", kinds={"python", "iceberg"}, op_tags=NHTSA_API, description="Raw NHTSA complaints (append-only, hash-deduplicated).")
 def bronze_nhtsa_complaints() -> MaterializeResult:
     return _ingest("complaints")
 
@@ -107,6 +122,78 @@ def iceberg_silver_gold() -> MaterializeResult:
     return MaterializeResult(metadata={"tables": MetadataValue.json(published)})
 
 
+# --- Recall PDFs + RAG index -------------------------------------------------
+
+@asset(
+    group_name="bronze",
+    kinds={"python", "iceberg", "pdf"},
+    op_tags=NHTSA_API,
+    deps=[iceberg_silver_gold],
+    description="Recall PDFs (Part 573 reports, dealer notices) for every gold campaign; new documents only.",
+)
+def bronze_recall_documents() -> MaterializeResult:
+    stats = run_document_ingestion()
+    return MaterializeResult(metadata={**stats, "failed_urls": MetadataValue.json(stats["failed_urls"])})
+
+
+@asset(
+    group_name="rag",
+    kinds={"pgvector", "postgres"},
+    deps=[iceberg_silver_gold, bronze_recall_documents],
+    description="Chunks + embeddings (pgvector) + tsvector, synced incrementally from the lakehouse (content hash).",
+)
+def rag_index() -> MaterializeResult:
+    stats = sync_index()
+    return MaterializeResult(
+        metadata={
+            "documents_indexed": stats["documents_indexed"],
+            "documents_unchanged": stats["documents_unchanged"],
+            "documents_deleted": stats["documents_deleted"],
+            "chunks_embedded": stats["chunks_embedded"],
+            "pdf_without_text": stats["pdf_without_text"],
+            "index_version": MetadataValue.text(stats["index_version"]),
+            "totals": MetadataValue.json(stats["index_totals"]),
+            "duration_s": stats["duration_s"],
+        }
+    )
+
+
+@asset_check(asset=rag_index, blocking=True, description="Every gold recall campaign is in the index, with chunks for both strategies.")
+def rag_index_in_sync() -> AssetCheckResult:
+    catalog = get_catalog(Settings.from_env())
+    campaigns = set(
+        catalog.load_table("gold.fct_recalls").scan(selected_fields=("campaign_number",)).to_arrow()
+        .column("campaign_number").to_pylist()
+    )
+    rag = RagSettings.from_env()
+    conn = rag_store.connect(rag.db_dsn)
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT metadata->>'campaign_number' FROM rag_documents WHERE source_type = 'recall'")
+            indexed = {r[0] for r in cur.fetchall()}
+            cur.execute(
+                "SELECT count(*) FROM rag_documents d WHERE (SELECT count(DISTINCT strategy) FROM rag_chunks c WHERE c.doc_id = d.doc_id) < 2"
+            )
+            incomplete = cur.fetchone()[0]
+            cur.execute("SELECT count(*) FROM rag_documents WHERE index_version <> %s", (rag.index_version,))
+            stale = cur.fetchone()[0]
+    finally:
+        conn.close()
+    missing, extra = sorted(campaigns - indexed), sorted(indexed - campaigns)
+    return AssetCheckResult(
+        passed=not (missing or extra or incomplete or stale),
+        severity=AssetCheckSeverity.ERROR,
+        metadata={
+            "gold_campaigns": len(campaigns),
+            "indexed_campaigns": len(indexed),
+            "missing": MetadataValue.json(missing[:20]),
+            "extra": MetadataValue.json(extra[:20]),
+            "documents_missing_a_strategy": incomplete,
+            "documents_with_stale_index_version": stale,
+        },
+    )
+
+
 # --- Jobs, schedule, alerting -----------------------------------------------
 
 daily_pipeline = define_asset_job("daily_pipeline", selection=AssetSelection.all())
@@ -136,9 +223,19 @@ def pipeline_failure_alert(context: RunFailureSensorContext) -> None:
 
 
 defs = Definitions(
-    assets=[bronze_nhtsa_recalls, bronze_nhtsa_complaints, nhtsa_dbt_models, soda_gold_checks, iceberg_silver_gold],
+    assets=[
+        bronze_nhtsa_recalls,
+        bronze_nhtsa_complaints,
+        nhtsa_dbt_models,
+        soda_gold_checks,
+        iceberg_silver_gold,
+        bronze_recall_documents,
+        rag_index,
+    ],
+    asset_checks=[rag_index_in_sync],
     jobs=[daily_pipeline, bronze_job],
     schedules=[daily_schedule],
     sensors=[pipeline_failure_alert],
     resources={"dbt": DbtCliResource(project_dir=dbt_project)},
+    executor=polite_executor,
 )

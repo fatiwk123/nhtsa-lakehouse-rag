@@ -14,6 +14,8 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
+      - name: CPU-only PyTorch
+        run: pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
       - run: pip install -r requirements-dev.txt
       - run: pytest -q
       - name: dbt parse (project compiles)
@@ -21,9 +23,10 @@ jobs:
         run: dbt parse --profiles-dir .
 
   pipeline:
-    # End-to-end run on a small scope: NHTSA API -> bronze Iceberg -> dbt build (models + tests) -> Soda -> Iceberg.
+    # End-to-end run on a small scope: NHTSA API -> bronze Iceberg -> dbt build (models + tests) -> Soda
+    # -> Iceberg -> recall PDFs -> RAG index (pgvector) + sync check.
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
       - name: Configure a small ingestion scope

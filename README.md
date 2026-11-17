@@ -71,7 +71,7 @@ PDFs ──────┘                 │  dbt-duckdb + Soda
 
 - [x] **Phase 1 — Socle** : docker-compose (MinIO, Postgres + pgvector, Dagster), ingestion NHTSA → bronze (JSON brut horodaté), écriture Iceberg. *Livrable : `docker compose up` charge les données brutes.*
 - [x] **Phase 2 — Transformations & qualité** : silver (nettoyage, normalisation constructeur/modèle/année, dédoublonnage), gold (faits rappels, faits plaintes, dimensions véhicule/composant), Soda (nulls, unicité, fraîcheur), tests dbt en CI, assets Dagster + schedule quotidien incrémental. *Livrable : pipeline autonome avec alerte qualité.*
-- [ ] **Phase 3 — Indexation RAG** : documents depuis le gold (1 rappel = 1 document) et les PDFs (PyMuPDF), 2 stratégies de chunking, embeddings dans pgvector, BM25 via tsvector, ré-indexation incrémentale par hash de contenu. *Livrable : index toujours synchronisé avec le lakehouse.*
+- [x] **Phase 3 — Indexation RAG** : documents depuis le gold (1 rappel = 1 document) et les PDFs (PyMuPDF), 2 stratégies de chunking, embeddings dans pgvector, BM25 via tsvector, ré-indexation incrémentale par hash de contenu. *Livrable : index toujours synchronisé avec le lakehouse.*
 - [ ] **Phase 4 — Assistant** : retrieval hybride (RRF) + reranking cross-encoder, citations obligatoires, « je ne sais pas » sous un seuil (ROC), agent à 2 outils (`search_docs`, `query_sql` en lecture seule sur tables autorisées), FastAPI + Streamlit.
 - [ ] **Phase 5 — Évaluation & observabilité** : jeu de 40–60 questions, recall@k, fidélité/hallucinations (RAGAS ou LLM-juge), exactitude SQL, latence, coût/requête ; comparaison vecteurs seuls / hybride / hybride + reranking ; Langfuse ; éval en CI qui fait échouer la PR si les scores baissent.
 - [ ] **Phase 6 — Finition** : Terraform (VM + docker-compose) ou démo vidéo, README final (choix, limites, métriques).
@@ -126,8 +126,44 @@ bronze_nhtsa_complaints┘   (incrémental)    ├─ bridge_complaint_component
 - 2 858 plaintes (3 242 lignes plainte × véhicule) ;
 - 34 véhicules et 34 groupes de composants.
 
+## Indexation RAG (phase 3)
+
+```
+gold.fct_recalls ──► 1 document par rappel ─┐
+                                            ├─► 2 chunkings ─► embeddings E5 ─► pgvector (HNSW)
+PDFs NHTSA (MinIO) ─► PyMuPDF, page à page ─┘   fixed / structure                 + tsvector (GIN)
+```
+
+- **PDFs** : pour chaque rappel du gold, l'endpoint NHTSA `safetyIssues` liste les documents déposés. On garde le *Part 573 Safety Recall Report* (dernière version seulement, les amendements étant quasi identiques) et les *Manufacturer notices to dealers* (bulletins techniques), 4 au plus par rappel. Les fichiers sont stockés dans MinIO et leurs métadonnées dans `bronze.nhtsa_recall_documents` (Iceberg). Un document déjà connu n'est jamais retéléchargé.
+- **Documents** :
+  - un rappel = un document : vue d'ensemble, résumé, conséquence, remède, avec en métadonnées la marque, les modèles, les années, la catégorie et la date ;
+  - un PDF = un document : texte extrait page par page, chaque chunk conserve sa page pour les citations.
+- **2 stratégies de chunking** (comparées en phase 5) :
+  - `fixed` : fenêtre glissante de 180 mots, chevauchement de 40 ;
+  - `structure` : regroupe paragraphes et phrases jusqu'à 220 mots, sans jamais traverser une section ni une page.
+- **Embeddings** : `intfloat/multilingual-e5-small` (384 dimensions), modèle multilingue car les questions sont en français et les documents en anglais. Le titre du document est ajouté à chaque chunk avant l'embedding (en-tête contextuel). Le modèle est intégré à l'image Docker.
+- **Recherche hybride sans outil en plus** : pgvector (HNSW, cosinus) et plein texte Postgres (`tsvector` pondéré titre/contenu, `ts_rank_cd`) dans la même table.
+- **Indexation incrémentale** : chaque document a un hash de contenu, et une `index_version` dérive du modèle et des paramètres de chunking. Seuls les documents nouveaux ou modifiés sont ré-embeddés, ceux sortis du lakehouse sont supprimés, chaque document est commité atomiquement. Changer de modèle ou de paramètres ré-indexe tout automatiquement.
+- **Dagster** : `bronze_recall_documents` → `rag_index`, avec le contrôle bloquant `rag_index_in_sync` : chaque rappel du gold est indexé, chaque document a ses deux stratégies, aucun n'a une version d'index périmée.
+
+Volumes (VW 2018-2020) :
+
+| | |
+|---|---|
+| Documents | 61 rappels + 190 PDFs (42 Mo) |
+| Chunks | 2 326 (1 185 `structure`, 1 141 `fixed`) |
+| 1ʳᵉ indexation | ~6 min (CPU) |
+| Passage sans changement | **0 document ré-embeddé, 2,8 s** |
+| 1 document modifié + 1 supprimé | 1 ré-embeddé (5 chunks), 1 supprimé, 8 s |
+
+Premier constat, qui motive la phase 4 : pour une question en français (« freinage des Golf 2018 »), la recherche vectorielle seule remonte des rappels Golf hors sujet, alors que la recherche plein texte trouve le bon rappel (18V369000). D'où la fusion hybride et le reranking.
+
+Essai en ligne de commande : `docker compose run --rm pipeline python -m rag search "brake caliper"`
+
 ## Limites connues
 
+- L'API NHTSA est publique mais limite les rafales : le client espace ses requêtes (`NHTSA_MIN_INTERVAL_S`), utilise 2 workers et Dagster n'exécute qu'une étape NHTSA à la fois.
+- Les PDFs scannés (sans texte) sont détectés et ignorés : il n'y a pas d'OCR.
 - NHTSA ne couvre que les véhicules vendus aux États-Unis : pas de données Renault, par exemple. Les constructeurs européens présents sont notamment Volkswagen, Audi, BMW, Mercedes-Benz et Volvo.
 - Pour respecter la contrainte de `soda-core-duckdb`, DuckDB est épinglé en 1.0.0.
 - Le run lancé par `docker compose up` (service `pipeline`, en ligne de commande) n'est pas couvert par le capteur d'alerte ; les runs planifiés ou lancés depuis Dagster le sont.
@@ -142,7 +178,7 @@ tests/          tests unitaires (pytest, en CI)
 dbt/            modèles silver / gold, seeds, tests
 quality/        contrôles Soda
 orchestration/  assets et schedules Dagster
-rag/            chunking, embeddings, indexation, retrieval
+rag/            documents, chunking, embeddings, index pgvector incrémental, recherche
 agent/          agent, outils, API FastAPI
 ui/             application Streamlit
 eval/           jeu de test et scripts d'évaluation

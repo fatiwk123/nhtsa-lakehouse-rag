@@ -45,6 +45,10 @@ class Settings:
     models: list[str]
     max_workers: int
 
+    # Recall PDFs: document types (file name prefix) and cap per campaign.
+    doc_types: list[str]
+    max_docs_per_campaign: int
+
     nhtsa_base_url: str = "https://api.nhtsa.gov"
 
     @property
@@ -74,5 +78,7 @@ class Settings:
             makes=_parse_list(env("NHTSA_MAKES", "VOLKSWAGEN")),
             model_years=_parse_years(env("NHTSA_MODEL_YEARS", "2018-2020")),
             models=_parse_list(env("NHTSA_MODELS", "")),
-            max_workers=int(env("NHTSA_MAX_WORKERS", "4")),
+            max_workers=int(env("NHTSA_MAX_WORKERS", "2")),
+            doc_types=_parse_list(env("NHTSA_DOC_TYPES", "RCLRPT,RCMN")),
+            max_docs_per_campaign=int(env("NHTSA_MAX_DOCS_PER_CAMPAIGN", "4")),
         )

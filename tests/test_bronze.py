@@ -42,3 +42,15 @@ def test_build_rows_handles_empty_payload():
 def test_filter_new_skips_known_and_in_batch_duplicates():
     rows = [{"row_hash": h} for h in ("a", "b", "b", "c")]
     assert [r["row_hash"] for r in filter_new(rows, {"a"})] == ["b", "c"]
+
+
+def test_rate_limiter_spaces_requests():
+    import time
+
+    from ingestion.nhtsa_client import RateLimiter
+
+    limiter = RateLimiter(0.05)
+    start = time.monotonic()
+    for _ in range(4):
+        limiter.wait()
+    assert time.monotonic() - start >= 0.15

@@ -11,7 +11,7 @@ Assistant automobile qui répond à des questions **textuelles** et **chiffrées
 ```bash
 cp .env.example .env
 docker compose up -d --build
-docker compose logs -f pipeline   # 1er run complet : bronze → silver/gold → Soda → Iceberg (~1 min)
+docker compose logs -f pipeline   
 ```
 
 | Service | URL |

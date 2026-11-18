@@ -242,3 +242,7 @@ data/pdfs/      PDFs techniques (non versionnés)
 ## Métriques
 
 *À venir (phase 5).*
+
+## Auteure
+
+Fatima Ezzahra Wankida — Data Engineer junior · [LinkedIn](https://www.linkedin.com/in/fatima-ezzahra-wankida)

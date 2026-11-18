@@ -15,9 +15,10 @@ RUN pip install --no-cache-dir torch==2.6.0 --index-url https://download.pytorch
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Bake the embedding model into the image: no download at runtime, reproducible runs.
+# Bake the embedding + reranking models into the image: no download at runtime, reproducible runs.
 ARG EMBEDDING_MODEL=intfloat/multilingual-e5-small
-RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('${EMBEDDING_MODEL}')"
+ARG RERANKER_MODEL=cross-encoder/mmarco-mMiniLMv2-L12-H384-v1
+RUN python -c "from sentence_transformers import SentenceTransformer, CrossEncoder; SentenceTransformer('${EMBEDDING_MODEL}'); CrossEncoder('${RERANKER_MODEL}')"
 ENV HF_HUB_OFFLINE=1
 
 COPY dagster_home/ /opt/dagster/home/
@@ -26,6 +27,8 @@ COPY quality/ ./quality/
 COPY ingestion/ ./ingestion/
 COPY orchestration/ ./orchestration/
 COPY rag/ ./rag/
+COPY api/ ./api/
+COPY ui/ ./ui/
 
 # Build the dbt manifest at image build time (needed by dagster-dbt; no DB connection).
 RUN cd dbt && dbt parse --profiles-dir . --quiet && mkdir -p /data/duckdb

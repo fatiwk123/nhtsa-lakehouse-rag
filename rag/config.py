@@ -44,3 +44,37 @@ class RagSettings:
             fixed_overlap_words=int(env("CHUNK_FIXED_OVERLAP", "40")),
             structure_max_words=int(env("CHUNK_STRUCTURE_MAX_WORDS", "220")),
         )
+
+
+@dataclass(frozen=True)
+class AssistantSettings:
+    """Retrieval + generation settings (not part of index_version: changing them needs no re-embedding)."""
+
+    reranker_model: str
+    candidates: int  # chunks per retrieval leg before fusion / reranking
+    top_k: int  # passages handed to the LLM
+    min_rerank_score: float  # below this (cross-encoder logit) the best passage is "not relevant"
+    ollama_url: str
+    llm_model: str
+    llm_timeout_s: int
+    max_agent_steps: int
+    duckdb_path: str
+    sql_max_rows: int
+    sql_timeout_s: float
+
+    @classmethod
+    def from_env(cls) -> "AssistantSettings":
+        env = os.environ.get
+        return cls(
+            reranker_model=env("RERANKER_MODEL", "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1"),
+            candidates=int(env("RAG_CANDIDATES", "30")),
+            top_k=int(env("RAG_TOP_K", "5")),
+            min_rerank_score=float(env("RAG_MIN_RERANK_SCORE", "0.0")),
+            ollama_url=env("OLLAMA_URL", "http://localhost:11434"),
+            llm_model=env("OLLAMA_MODEL", "qwen3:4b-instruct"),
+            llm_timeout_s=int(env("OLLAMA_TIMEOUT_S", "300")),
+            max_agent_steps=int(env("AGENT_MAX_STEPS", "4")),
+            duckdb_path=env("DUCKDB_PATH", "/data/duckdb/lakehouse.duckdb"),
+            sql_max_rows=int(env("SQL_MAX_ROWS", "50")),
+            sql_timeout_s=float(env("SQL_TIMEOUT_S", "10")),
+        )

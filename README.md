@@ -11,11 +11,17 @@ Assistant automobile qui répond à des questions **textuelles** et **chiffrées
 ```bash
 cp .env.example .env
 docker compose up -d --build
-docker compose logs -f pipeline   
+docker compose logs -f pipeline
+docker compose run --rm ollama-pull
 ```
+
+Le premier run complet (bronze → gold → Soda → Iceberg → PDFs → index) prend une dizaine de minutes ;
+`ollama-pull` télécharge une seule fois le LLM local (`OLLAMA_MODEL`, ~2,5 Go).
 
 | Service | URL |
 |---|---|
+| Assistant (Streamlit) | http://localhost:8501 |
+| API (FastAPI, doc OpenAPI) | http://localhost:8000/docs |
 | Dagster | http://localhost:3000 |
 | Console MinIO | http://localhost:9001 (minioadmin / minioadmin) |
 | Postgres | localhost:5432 (lakehouse / lakehouse) |
@@ -72,7 +78,7 @@ PDFs ──────┘                 │  dbt-duckdb + Soda
 - [x] **Phase 1 — Socle** : docker-compose (MinIO, Postgres + pgvector, Dagster), ingestion NHTSA → bronze (JSON brut horodaté), écriture Iceberg. *Livrable : `docker compose up` charge les données brutes.*
 - [x] **Phase 2 — Transformations & qualité** : silver (nettoyage, normalisation constructeur/modèle/année, dédoublonnage), gold (faits rappels, faits plaintes, dimensions véhicule/composant), Soda (nulls, unicité, fraîcheur), tests dbt en CI, assets Dagster + schedule quotidien incrémental. *Livrable : pipeline autonome avec alerte qualité.*
 - [x] **Phase 3 — Indexation RAG** : documents depuis le gold (1 rappel = 1 document) et les PDFs (PyMuPDF), 2 stratégies de chunking, embeddings dans pgvector, BM25 via tsvector, ré-indexation incrémentale par hash de contenu. *Livrable : index toujours synchronisé avec le lakehouse.*
-- [ ] **Phase 4 — Assistant** : retrieval hybride (RRF) + reranking cross-encoder, citations obligatoires, « je ne sais pas » sous un seuil (ROC), agent à 2 outils (`search_docs`, `query_sql` en lecture seule sur tables autorisées), FastAPI + Streamlit.
+- [x] **Phase 4 — Assistant** : retrieval hybride (RRF) + reranking cross-encoder, citations obligatoires, « je ne sais pas » sous un seuil (ROC), agent à 2 outils (`search_docs`, `query_sql` en lecture seule sur tables autorisées), FastAPI + Streamlit.
 - [ ] **Phase 5 — Évaluation & observabilité** : jeu de 40–60 questions, recall@k, fidélité/hallucinations (RAGAS ou LLM-juge), exactitude SQL, latence, coût/requête ; comparaison vecteurs seuls / hybride / hybride + reranking ; Langfuse ; éval en CI qui fait échouer la PR si les scores baissent.
 - [ ] **Phase 6 — Finition** : Terraform (VM + docker-compose) ou démo vidéo, README final (choix, limites, métriques).
 
@@ -150,9 +156,9 @@ Volumes (VW 2018-2020) :
 
 | | |
 |---|---|
-| Documents | 61 rappels + 190 PDFs (42 Mo) |
-| Chunks | 2 326 (1 185 `structure`, 1 141 `fixed`) |
-| 1ʳᵉ indexation | ~6 min (CPU) |
+| Documents | 61 rappels + 175 PDFs (37 Mo) |
+| Chunks | 1 824 (944 `structure`, 880 `fixed`) |
+| 1ʳᵉ indexation | 5 min 37 (CPU), run Dagster complet depuis zéro |
 | Passage sans changement | **0 document ré-embeddé, 2,8 s** |
 | 1 document modifié + 1 supprimé | 1 ré-embeddé (5 chunks), 1 supprimé, 8 s |
 
@@ -160,9 +166,55 @@ Premier constat, qui motive la phase 4 : pour une question en français (« frei
 
 Essai en ligne de commande : `docker compose run --rm pipeline python -m rag search "brake caliper"`
 
+## Assistant (phase 4)
+
+```
+question ─► recherche hybride ─► passages [S1..S5] ─┐
+            (vecteur + plein texte, RRF,            ├─► LLM local (Ollama) ─► outils ─► réponse citée
+             rerank cross-encoder, seuil)           │      search_docs / query_sql      ou « je ne sais pas »
+                                                    └─ tables gold (DuckDB, lecture seule)
+```
+
+- **Retrieval en 3 modes** (comparés en phase 5) : `vector`, `hybrid` (Reciprocal Rank Fusion des classements pgvector et plein texte, k = 60) et `hybrid_rerank` (les 30 candidats fusionnés sont reclassés par `cross-encoder/mmarco-mMiniLMv2-L12-H384-v1`, multilingue : questions en français, documents en anglais).
+- **« Je ne sais pas » sous un seuil** : si le meilleur passage a un score de reranking < `RAG_MIN_RERANK_SCORE` (0 par défaut), la recherche est déclarée non pertinente. Sur les essais, les vraies questions donnent des scores de +3 à +6, et les questions hors périmètre (« Renault Clio », « tarte aux pommes ») de −4 à −6. Le seuil sera calibré en phase 5 sur le jeu d'évaluation.
+- **Agent à 2 outils** : `search_docs` (recherche hybride, passages numérotés à citer) et `query_sql` (comptes, listes et classements sur le gold). Les règles sont **appliquées dans le code**, pas seulement demandées au modèle :
+  - les passages sont recherchés pour la question avant le premier appel au LLM (les petits modèles oublient souvent l'outil de recherche) ;
+  - une question quantitative (« combien », « le plus »…) doit passer par `query_sql` : quelques passages ne sont pas une statistique ;
+  - sans preuve (aucun passage pertinent, aucune ligne SQL), la réponse est la phrase fixe « Je ne sais pas… », quoi qu'ait écrit le modèle ;
+  - les citations `[S#]` qui ne correspondent à aucun passage renvoyé sont supprimées ;
+  - après un échec d'outil (SQL invalide, résultat vide), le modèle a droit à une relance avec l'erreur ;
+  - les nombres de la réponse absents des résultats d'outils sont signalés (`unsupported_numbers`), un premier indicateur d'hallucination pour la phase 5.
+- **SQL en lecture seule, défense en profondeur** :
+  - une seule requête `SELECT`, vérifiée avec le parseur de DuckDB ;
+  - uniquement les 5 tables gold autorisées ;
+  - connexion `read_only` sans accès aux fichiers (`enable_external_access = false`) ;
+  - au plus 50 lignes, interruption après 10 s.
+
+  Les tests vérifient le refus de `DELETE`, `DROP`, `ATTACH`, `COPY`, `read_csv`, de plusieurs requêtes et des autres schémas.
+- **LLM local** : `qwen3:4b-instruct` via Ollama, sans clé ni donnée qui sort de la machine. Les autres modèles testés :
+  - `qwen2.5:3b` écrit du SQL faux et invente des chiffres ;
+  - `qwen2.5:7b` donne de bonnes réponses, mais met 2 à 4 min par question sur CPU ;
+  - `qwen3:4b`, la version « thinking », raisonne pendant plusieurs minutes avant chaque appel d'outil.
+
+  Le modèle se change avec `OLLAMA_MODEL`.
+- **API** FastAPI (`/search`, `/ask`, `/health`) et **interface** Streamlit : la réponse affiche ses sources (titre, page, lien NHTSA), la requête SQL exécutée et le déroulé des outils.
+
+Exemples (Volkswagen 2018-2020, CPU 12 cœurs, sans GPU) :
+
+| Question | Outils | Réponse | Latence |
+|---|---|---|---|
+| Combien de plaintes moteur pour Volkswagen déposées en 2025 ? | SQL | 52 (exact) | ~3 min |
+| Quels modèles VW ont le plus de plaintes avec incendie ? | SQL | TIGUAN 4, JETTA 3, TIGUAN LIMITED 3… (exact) | ~50 s |
+| Pourquoi les Golf 2018 ont-elles été rappelées pour le freinage ? | recherche | pistons d'étriers mal revêtus, rappel 18V369000, cité | ~1 min 30 |
+| Quel est le remède du rappel 18V369000 ? | recherche | purge des étriers, cité (rappel + rapport PDF p. 1) | ~2 min |
+| Quels sont les rappels Renault Clio ? | recherche | « Je ne sais pas » (hors périmètre NHTSA) | ~15 s |
+
+La latence vient de la génération du LLM sur CPU, à environ 7 tokens/s. Un GPU, ou une API hébergée, la ramènerait à quelques secondes.
+
 ## Limites connues
 
 - L'API NHTSA est publique mais limite les rafales : le client espace ses requêtes (`NHTSA_MIN_INTERVAL_S`), utilise 2 workers et Dagster n'exécute qu'une étape NHTSA à la fois.
+- L'assistant tourne sur CPU : de 15 s à 3 min par question, et Ollama a besoin d'environ 3,5 Go de RAM. Il traite une requête à la fois (`OLLAMA_NUM_PARALLEL=1`) pour tenir dans 8 Go de mémoire Docker.
 - Les PDFs scannés (sans texte) sont détectés et ignorés : il n'y a pas d'OCR.
 - NHTSA ne couvre que les véhicules vendus aux États-Unis : pas de données Renault, par exemple. Les constructeurs européens présents sont notamment Volkswagen, Audi, BMW, Mercedes-Benz et Volvo.
 - Pour respecter la contrainte de `soda-core-duckdb`, DuckDB est épinglé en 1.0.0.
@@ -179,7 +231,8 @@ dbt/            modèles silver / gold, seeds, tests
 quality/        contrôles Soda
 orchestration/  assets et schedules Dagster
 rag/            documents, chunking, embeddings, index pgvector incrémental, recherche
-agent/          agent, outils, API FastAPI
+rag/            + retrieval hybride (RRF, rerank), agent, outils search_docs / query_sql, client Ollama
+api/            API FastAPI (/search, /ask, /health)
 ui/             application Streamlit
 eval/           jeu de test et scripts d'évaluation
 infra/          init Postgres, Terraform

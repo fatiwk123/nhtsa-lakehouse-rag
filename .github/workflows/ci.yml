@@ -22,6 +22,21 @@ jobs:
         working-directory: dbt
         run: dbt parse --profiles-dir .
 
+  terraform:
+    # Static checks only (no AWS credentials): formatting and a valid configuration.
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra/terraform
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+      - run: terraform fmt -check -recursive
+      - run: terraform init -backend=false -input=false
+      - run: terraform validate
+
   pipeline-and-eval:
     # End-to-end on the evaluation scope (Volkswagen 2018-2020): NHTSA API -> bronze Iceberg -> dbt build
     # (models + tests) -> Soda -> Iceberg -> recall PDFs -> RAG index + sync check, then the retrieval

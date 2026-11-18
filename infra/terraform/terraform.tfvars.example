@@ -1,0 +1,9 @@
+# cp terraform.tfvars.example terraform.tfvars
+ssh_public_key = "ssh-ed25519 AAAA... you@laptop"
+allowed_cidrs  = ["203.0.113.7/32"] # your public IP: curl -s https://checkip.amazonaws.com
+
+# region            = "eu-west-3"
+# instance_type     = "m6i.2xlarge"  # 8 vCPU: ~2x faster answers
+# expose_ui         = false
+# nhtsa_makes       = "VOLKSWAGEN"
+# nhtsa_model_years = "2018-2020"

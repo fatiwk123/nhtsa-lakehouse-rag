@@ -1,0 +1,69 @@
+#cloud-config
+# First boot: Docker, clone of the repository, .env with generated secrets, then the same
+# commands as the local quickstart. A systemd unit restarts the stack after a reboot.
+package_update: true
+packages:
+  - docker.io
+  - docker-compose-v2
+  - docker-buildx
+  - git
+  - openssl
+
+write_files:
+  - path: /opt/nhtsa/bootstrap.sh
+    permissions: "0750"
+    content: |
+      #!/bin/bash
+      set -euo pipefail
+      exec >>/var/log/nhtsa-bootstrap.log 2>&1
+      echo "== bootstrap $(date -Is)"
+
+      APP=/opt/nhtsa/app
+      if [ ! -d "$APP/.git" ]; then
+        git clone --depth 1 --branch "${repo_ref}" "${repo_url}" "$APP"
+      fi
+      cd "$APP"
+
+      if [ ! -f .env ]; then
+        cp .env.example .env
+        PG_PASSWORD=$(openssl rand -hex 24)
+        MINIO_SECRET=$(openssl rand -hex 24)
+        sed -i \
+          -e "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$PG_PASSWORD|" \
+          -e "s|^MINIO_ACCESS_KEY=.*|MINIO_ACCESS_KEY=lakehouse-admin|" \
+          -e "s|^MINIO_SECRET_KEY=.*|MINIO_SECRET_KEY=$MINIO_SECRET|" \
+          -e "s|^NHTSA_MAKES=.*|NHTSA_MAKES=${nhtsa_makes}|" \
+          -e "s|^NHTSA_MODEL_YEARS=.*|NHTSA_MODEL_YEARS=${nhtsa_model_years}|" \
+          -e "s|^OLLAMA_MODEL=.*|OLLAMA_MODEL=${ollama_model}|" \
+          .env
+        chmod 600 .env
+      fi
+
+      docker compose up -d --build
+      docker compose run --rm ollama-pull
+      echo "== stack up $(date -Is)"
+
+  - path: /etc/systemd/system/nhtsa-stack.service
+    content: |
+      [Unit]
+      Description=NHTSA lakehouse RAG (docker compose)
+      Requires=docker.service
+      After=docker.service network-online.target
+      Wants=network-online.target
+
+      [Service]
+      Type=oneshot
+      RemainAfterExit=true
+      WorkingDirectory=/opt/nhtsa/app
+      ExecStart=/usr/bin/docker compose up -d
+      ExecStop=/usr/bin/docker compose stop
+
+      [Install]
+      WantedBy=multi-user.target
+
+runcmd:
+  - systemctl enable --now docker
+  - usermod -aG docker ubuntu
+  - /opt/nhtsa/bootstrap.sh
+  - systemctl daemon-reload
+  - systemctl enable nhtsa-stack.service

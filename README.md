@@ -36,7 +36,7 @@ complet sur un petit périmètre (ingestion réelle, `dbt build` avec ses tests,
 ## Sources
 
 - **API publique NHTSA** : rappels (recalls) et plaintes (complaints), mises à jour régulièrement → vrai incrémental.
-- **PDFs techniques** : manuels, bulletins techniques (TSB).
+- **PDFs NHTSA des rappels** : rapports de sécurité du constructeur (*Part 573*) et notices aux concessionnaires.
 
 Données structurées (pour le SQL) + texte (pour le RAG).
 
@@ -80,14 +80,17 @@ PDFs ──────┘                 │  dbt-duckdb + Soda
 - [x] **Phase 3 — Indexation RAG** : documents depuis le gold (1 rappel = 1 document) et les PDFs (PyMuPDF), 2 stratégies de chunking, embeddings dans pgvector, BM25 via tsvector, ré-indexation incrémentale par hash de contenu. *Livrable : index toujours synchronisé avec le lakehouse.*
 - [x] **Phase 4 — Assistant** : retrieval hybride (RRF) + reranking cross-encoder, citations obligatoires, « je ne sais pas » sous un seuil (ROC), agent à 2 outils (`search_docs`, `query_sql` en lecture seule sur tables autorisées), FastAPI + Streamlit.
 - [x] **Phase 5 — Évaluation & observabilité** : jeu de 40–60 questions, recall@k, fidélité/hallucinations (RAGAS ou LLM-juge), exactitude SQL, latence, coût/requête ; comparaison vecteurs seuls / hybride / hybride + reranking ; Langfuse ; éval en CI qui fait échouer la PR si les scores baissent.
-- [ ] **Phase 6 — Finition** : Terraform (VM + docker-compose) ou démo vidéo, README final (choix, limites, métriques).
+- [x] **Phase 6 — Finition** : Terraform (VM AWS + docker-compose), README final (choix, limites, métriques).
 
 ## Choix de conception
 
-- **Pas de Spark ni de Kubernetes** : DuckDB suffit largement pour ce volume.
-- **pgvector plutôt que Qdrant** : un seul Postgres pour vecteurs, plein texte (BM25) et métadonnées → recherche hybride sans service supplémentaire.
+- **Pas de Spark ni de Kubernetes** : DuckDB suffit largement pour ce volume, et une VM avec docker-compose suffit pour le déployer.
+- **pgvector plutôt que Qdrant** : un seul Postgres pour vecteurs, plein texte (BM25) et métadonnées → recherche hybride sans service supplémentaire. Ce Postgres sert aussi de catalog Iceberg, de stockage Dagster et de base Langfuse.
 - **Iceberg** : tables versionnées, évolution de schéma, time-travel, sur stockage objet.
 - **Périmètre progressif** : 1–2 constructeurs au départ, puis élargissement.
+- **LLM local plutôt qu'API** : aucune clé, aucune donnée qui sort de la machine, coût nul. Le prix est la latence sur CPU ; le client LLM est une interface, un modèle hébergé se brancherait sans toucher à l'agent.
+- **Les garde-fous sont dans le code, pas dans le prompt** : « je ne sais pas » sans preuve, SQL obligatoire pour un chiffre, citations vérifiées, SQL en lecture seule contrôlé par le parseur. Un petit modèle n'a pas à être fiable pour que le système le soit.
+- **Chaque choix est mesuré** : modes de recherche, chunking et seuil sont choisis sur le jeu d'évaluation, et la CI empêche de régresser.
 
 Le différenciant : **l'incrémental de bout en bout** (nouvelle donnée → transformée → contrôlée → indexée) et **l'évaluation chiffrée**.
 
@@ -176,7 +179,7 @@ question ─► recherche hybride ─► passages [S1..S5] ─┐
 ```
 
 - **Retrieval en 3 modes** (comparés en phase 5) : `vector`, `hybrid` (Reciprocal Rank Fusion des classements pgvector et plein texte, k = 60) et `hybrid_rerank` (les 30 candidats fusionnés sont reclassés par `cross-encoder/mmarco-mMiniLMv2-L12-H384-v1`, multilingue : questions en français, documents en anglais).
-- **« Je ne sais pas » sous un seuil** : si le meilleur passage a un score de reranking < `RAG_MIN_RERANK_SCORE` (0 par défaut), la recherche est déclarée non pertinente. Sur les essais, les vraies questions donnent des scores de +3 à +6, et les questions hors périmètre (« Renault Clio », « tarte aux pommes ») de −4 à −6. Le seuil sera calibré en phase 5 sur le jeu d'évaluation.
+- **« Je ne sais pas » sous un seuil** : si le meilleur passage a un score de reranking < `RAG_MIN_RERANK_SCORE` (0 par défaut), la recherche est déclarée non pertinente. Sur les essais, les vraies questions donnent des scores de +3 à +6, et les questions hors périmètre (« Renault Clio », « tarte aux pommes ») de −4 à −6. Le seuil est calibré en phase 5 sur le jeu d'évaluation.
 - **Agent à 2 outils** : `search_docs` (recherche hybride, passages numérotés à citer) et `query_sql` (comptes, listes et classements sur le gold). Les règles sont **appliquées dans le code**, pas seulement demandées au modèle :
   - les passages sont recherchés pour la question avant le premier appel au LLM (les petits modèles oublient souvent l'outil de recherche) ;
   - une question quantitative (« combien », « le plus »…) doit passer par `query_sql` : quelques passages ne sont pas une statistique ;
@@ -301,6 +304,33 @@ Chaque question devient une trace :
 
 Langfuse v2 réutilise le Postgres de la stack, dans un schéma dédié. Sans les clés, le traçage est désactivé et rien ne change.
 
+## Déploiement (phase 6)
+
+[`infra/terraform`](infra/terraform) déploie la stack sur **une VM AWS** : la même que en local, sans service managé.
+
+```bash
+cd infra/terraform
+cp terraform.tfvars.example terraform.tfvars
+terraform init
+terraform apply
+$(terraform output -raw wait_for_bootstrap)
+$(terraform output -raw tunnel)
+terraform destroy
+```
+
+Dans `terraform.tfvars`, renseigner sa clé SSH publique et son IP.
+Le premier démarrage prend 15 à 20 min (images, LLM, pipeline complet). L'assistant est ensuite sur http://localhost:8501, à travers le tunnel SSH.
+
+- **Ressources** : une instance `m6i.xlarge` (4 vCPU, 16 Go) sous Ubuntu 24.04, un disque gp3 chiffré de 40 Go, une paire de clés et un groupe de sécurité, dans le VPC par défaut.
+- **cloud-init** installe Docker, clone le dépôt, génère le `.env` puis lance les mêmes commandes que le démarrage rapide. Une unité systemd relance la stack après un redémarrage, et le schedule Dagster reprend la mise à jour quotidienne.
+- **Sécurité** :
+  - seul le SSH est ouvert, et uniquement aux IPs listées (`0.0.0.0/0` est refusé par la validation) ;
+  - l'UI, l'API, Dagster et MinIO passent par le tunnel SSH ; `expose_ui = true` ouvre l'UI aux mêmes IPs ;
+  - les mots de passe Postgres et MinIO sont générés sur la VM au premier démarrage : ils ne sont ni dans l'état Terraform, ni dans les user data ;
+  - IMDSv2 est obligatoire.
+- **Coût** : de l'ordre de 0,2 $ de l'heure (on-demand, Paris), plus le disque. Le `destroy` après la démo est donc recommandé.
+- **CI** : le job `terraform` vérifie le format et la validité de la configuration à chaque push (sans compte AWS).
+
 ## Limites connues
 
 - L'API NHTSA est publique mais limite les rafales : le client espace ses requêtes (`NHTSA_MIN_INTERVAL_S`), utilise 2 workers et Dagster n'exécute qu'une étape NHTSA à la fois.
@@ -310,6 +340,7 @@ Langfuse v2 réutilise le Postgres de la stack, dans un schéma dédié. Sans le
 - Pour respecter la contrainte de `soda-core-duckdb`, DuckDB est épinglé en 1.0.0.
 - Le run lancé par `docker compose up` (service `pipeline`, en ligne de commande) n'est pas couvert par le capteur d'alerte ; les runs planifiés ou lancés depuis Dagster le sont.
 - Les images MinIO officielles ne sont plus publiées publiquement ; la stack utilise l'image figée `bitnamilegacy/minio` (développement local uniquement).
+- Le déploiement est une démo, pas une production : une seule VM, ni HTTPS ni authentification sur l'UI (d'où le tunnel SSH), pas de sauvegarde des volumes, état Terraform local.
 
 ## Structure
 
@@ -325,7 +356,7 @@ rag/            documents, chunking, embeddings, index pgvector incrémental, re
 api/            API FastAPI (/search, /ask, /health)
 ui/             application Streamlit
 eval/           jeu d'évaluation (56 questions), éval retrieval / assistant, garde-fou de régression
-infra/          init Postgres, Terraform
+infra/          init Postgres, Terraform (VM AWS)
 data/pdfs/      PDFs techniques (non versionnés)
 ```
 
@@ -339,6 +370,7 @@ data/pdfs/      PDFs techniques (non versionnés)
 | « Je ne sais pas » | 8/8 questions hors périmètre refusées, AUC du seuil = 1,00 |
 | Assistant (56 questions, LLM local 4B) | 88 % d'exactitude, 98 % de citations correctes, 0 $ par question |
 | Latence (CPU, sans GPU) | ~2 min 15 par question (p50) |
+| CI | tests unitaires, `dbt parse`, Terraform, pipeline complet + éval de retrieval avec garde-fou de régression |
 
 Détail et méthode : section *Évaluation et observabilité*.
 

@@ -1,0 +1,7 @@
+{
+  "hybrid_rerank/fixed recall@5": 1.0,
+  "hybrid_rerank/fixed recall@1": 0.8088,
+  "hybrid_rerank/fixed mrr": 0.9265,
+  "threshold in_scope_accepted": 1.0,
+  "threshold out_of_scope_rejected": 1.0
+}

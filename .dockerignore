@@ -7,3 +7,4 @@ dbt/logs
 data
 tests
 *.duckdb
+eval/results

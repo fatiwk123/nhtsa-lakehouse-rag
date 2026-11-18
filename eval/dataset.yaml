@@ -1,0 +1,261 @@
+# Evaluation set (scope: Volkswagen, model years 2018-2020).
+#
+# type: doc   -> answer is in the recall documents; `relevant` = campaign numbers whose passages answer it
+#                (retrieval: a hit is relevant when its document belongs to one of these campaigns).
+#                `must_mention` (optional): terms the answer must contain (case-insensitive, any one of each list).
+# type: sql   -> numeric / ranking answer; `reference_sql` is run on the gold tables at eval time, so the
+#                expected value follows the data. `expect`: scalar (first cell must appear in the answer)
+#                or top3 (first column of the first 3 rows must appear).
+# type: out_of_scope -> nothing in the corpus answers it: the assistant must say "je ne sais pas".
+
+questions:
+  # --- Documents: defects, causes, consequences, remedies -------------------------------------------
+  - id: doc-01
+    type: doc
+    question: Pourquoi les Golf 2018 ont-elles été rappelées pour le freinage ?
+    relevant: [18V369000]
+    must_mention: [[piston, étrier, caliper]]
+  - id: doc-02
+    type: doc
+    question: Quel est le remède du rappel 18V369000 ?
+    relevant: [18V369000]
+    must_mention: [[purge, purger, bleed, vidage, vidange, vider]]
+  - id: doc-03
+    type: doc
+    question: Quel problème touche le réservoir de carburant des Atlas 2018 ?
+    relevant: [17V766000, 18V284000]
+    must_mention: [[réservoir, tank]]
+  - id: doc-04
+    type: doc
+    question: Que se passe-t-il avec l'airbag conducteur des Tiguan Limited 2018 ?
+    relevant: [18V102000]
+  - id: doc-05
+    type: doc
+    question: Pourquoi les boulons de support moteur du Tiguan 2018 posent-ils problème ?
+    relevant: [18V159000]
+  - id: doc-06
+    type: doc
+    question: What is the issue with the rear shock absorber on the 2018 Tiguan LWB?
+    relevant: [18V262000]
+  - id: doc-07
+    type: doc
+    question: Quel défaut concerne l'écrou de la rotule de suspension avant du Tiguan 2018 ?
+    relevant: [18V324000]
+  - id: doc-08
+    type: doc
+    question: Pourquoi l'airbag passager frontal des Atlas et Tiguan 2018 a-t-il été rappelé ?
+    relevant: [18V375000]
+  - id: doc-09
+    type: doc
+    question: Quel problème de verrouillage de colonne de direction touche les Golf 2018 ?
+    relevant: [18V464000]
+  - id: doc-10
+    type: doc
+    question: Quel est le défaut du module LED du toit panoramique du Tiguan ?
+    relevant: [18V467000]
+  - id: doc-11
+    type: doc
+    question: Pourquoi le support d'étrier de frein des Atlas et Passat a-t-il été rappelé ?
+    relevant: [18V536000]
+  - id: doc-12
+    type: doc
+    question: Quel est le risque lié au tube d'évacuation de la climatisation sur l'Atlas 2018 ?
+    relevant: [18V537000]
+  - id: doc-13
+    type: doc
+    question: Quel défaut touche le phare LED côté passager des Jetta 2019 ?
+    relevant: [18V671000]
+  - id: doc-14
+    type: doc
+    question: Quel problème de siège arrière concerne les e-Golf et Golf R 2018 ?
+    relevant: [18V803000]
+  - id: doc-15
+    type: doc
+    question: Pourquoi le tuyau de carburant de la Golf R 2018 peut-il se détacher ?
+    relevant: [18V864000]
+  - id: doc-16
+    type: doc
+    question: Pourquoi les ressorts de suspension arrière des Golf et Jetta 2019 ont-ils été rappelés ?
+    relevant: [19V188000, 18V904000]
+    must_mention: [[ressort, spring]]
+  - id: doc-17
+    type: doc
+    question: Quel avertissement manque sur le combiné d'instruments de la Beetle 2019 ?
+    relevant: [19V094000]
+  - id: doc-18
+    type: doc
+    question: Quel problème d'airbag latéral concerne les Atlas 2019 et Passat 2020 ?
+    relevant: [19V218000]
+  - id: doc-19
+    type: doc
+    question: Quelle erreur contient l'étiquette d'information pneus du Tiguan 2019 ?
+    relevant: [19V241000]
+  - id: doc-20
+    type: doc
+    question: Pourquoi le réglage des phares des Passat et Atlas a-t-il fait l'objet d'un rappel ?
+    relevant: [19V389000]
+  - id: doc-21
+    type: doc
+    question: Quel est le problème de soudure de la pompe à jet du réservoir de l'Atlas 2019 ?
+    relevant: [19V614000]
+  - id: doc-22
+    type: doc
+    question: What is wrong with the front wheel bearings of the 2019 Jetta GLI and Golf GTI?
+    relevant: [19V879000]
+  - id: doc-23
+    type: doc
+    question: Quel défaut du servofrein électronique touche l'Arteon 2019 ?
+    relevant: [20V135000]
+  - id: doc-24
+    type: doc
+    question: Pourquoi les vis d'étrier avant d'une Jetta 2020 ont-elles été rappelées ?
+    relevant: [20V359000]
+  - id: doc-25
+    type: doc
+    question: Quel est le défaut des fusées de direction de l'Atlas Cross Sport ?
+    relevant: [20V712000, 21V026000]
+  - id: doc-26
+    type: doc
+    question: Pourquoi les boulons d'ancrage des ceintures de troisième rangée du Tiguan 2020 sont-ils rappelés ?
+    relevant: [20V579000]
+  - id: doc-27
+    type: doc
+    question: Quel est le problème des vis de rampe d'injection des Jetta 2018 ?
+    relevant: [20V648000]
+  - id: doc-28
+    type: doc
+    question: Quel défaut des pneus Continental concerne l'Atlas ?
+    relevant: [20V702000, 21V142000]
+  - id: doc-29
+    type: doc
+    question: Que se passe-t-il avec le système de détection du passager de l'Atlas ?
+    relevant: [23V215000, 24V464000]
+  - id: doc-30
+    type: doc
+    question: Pourquoi le capteur de pression des pneus (TPMS) a-t-il été rappelé sur les Golf et Jetta 2019 ?
+    relevant: [22V815000]
+  - id: doc-31
+    type: doc
+    question: Quel problème de contacteur d'allumage concerne les Golf et Jetta 2019 ?
+    relevant: [23V604000]
+  - id: doc-32
+    type: doc
+    question: Quel est le risque de l'airbag conducteur des Beetle 2018-2019 ?
+    relevant: [24V834000]
+  - id: doc-33
+    type: doc
+    question: Quelle pièce de direction peut se desserrer sur les Tiguan 2018 et Atlas 2018-2019 ?
+    relevant: [26V590000]
+  - id: doc-34
+    type: doc
+    question: Quel problème concerne le maître-cylindre de frein Beck/Arnley ?
+    relevant: [20E064000]
+
+  # --- SQL: counts, rankings, dates ------------------------------------------------------------------
+  - id: sql-01
+    type: sql
+    question: Combien de plaintes moteur pour Volkswagen ont été déposées en 2025 ?
+    expect: scalar
+    reference_sql: >
+      SELECT count(DISTINCT c.odi_number) FROM fct_complaints c
+      JOIN bridge_complaint_component b ON b.odi_number = c.odi_number AND b.vehicle_key = c.vehicle_key
+      WHERE b.category = 'ENGINE' AND year(c.complaint_filed_date) = 2025
+  - id: sql-02
+    type: sql
+    question: Quels modèles VW ont le plus de plaintes avec incendie ?
+    expect: top3
+    reference_sql: >
+      SELECT model, count(DISTINCT odi_number) n FROM fct_complaints WHERE fire GROUP BY model ORDER BY n DESC, model LIMIT 3
+  - id: sql-03
+    type: sql
+    question: Combien de campagnes de rappel concernent l'Atlas 2018 ?
+    expect: scalar
+    reference_sql: SELECT count(DISTINCT campaign_number) FROM fct_recalls WHERE model = 'ATLAS' AND model_year = 2018
+  - id: sql-04
+    type: sql
+    question: Combien de rappels liés aux airbags y a-t-il au total ?
+    expect: scalar
+    reference_sql: SELECT count(DISTINCT campaign_number) FROM fct_recalls WHERE category = 'AIRBAGS'
+  - id: sql-05
+    type: sql
+    question: Quel modèle a le plus de campagnes de rappel ?
+    expect: top1
+    reference_sql: SELECT model, count(DISTINCT campaign_number) n FROM fct_recalls GROUP BY model ORDER BY n DESC, model LIMIT 1
+  - id: sql-06
+    type: sql
+    question: Combien de plaintes au total pour la Jetta 2019 ?
+    expect: scalar
+    reference_sql: SELECT count(DISTINCT odi_number) FROM fct_complaints WHERE model = 'JETTA' AND model_year = 2019
+  - id: sql-07
+    type: sql
+    question: Combien de plaintes signalent un accident (crash) pour le Tiguan 2018 ?
+    expect: scalar
+    reference_sql: SELECT count(DISTINCT odi_number) FROM fct_complaints WHERE model = 'TIGUAN' AND model_year = 2018 AND crash
+  - id: sql-08
+    type: sql
+    question: Quelles sont les 3 catégories de composants avec le plus de plaintes ?
+    expect: top3
+    reference_sql: >
+      SELECT category, count(DISTINCT odi_number) n FROM bridge_complaint_component GROUP BY category ORDER BY n DESC, category LIMIT 3
+  - id: sql-09
+    type: sql
+    question: Combien de blessés au total sont déclarés dans les plaintes sur la Passat ?
+    expect: scalar
+    reference_sql: >
+      SELECT coalesce(sum(n), 0) FROM (SELECT DISTINCT odi_number, number_of_injuries n FROM fct_complaints WHERE model = 'PASSAT')
+  - id: sql-10
+    type: sql
+    question: Combien de rappels demandent de garer le véhicule (park it) ?
+    expect: scalar
+    reference_sql: SELECT count(DISTINCT campaign_number) FROM fct_recalls WHERE park_it
+  - id: sql-11
+    type: sql
+    question: Combien de plaintes freinage pour l'Atlas, toutes années confondues ?
+    expect: scalar
+    reference_sql: >
+      SELECT count(DISTINCT c.odi_number) FROM fct_complaints c
+      JOIN bridge_complaint_component b ON b.odi_number = c.odi_number AND b.vehicle_key = c.vehicle_key
+      WHERE c.model = 'ATLAS' AND b.category = 'BRAKES'
+  - id: sql-12
+    type: sql
+    question: En quelle année a-t-on déposé le plus de plaintes sur la Golf ?
+    expect: top1
+    reference_sql: >
+      SELECT year(complaint_filed_date) y, count(DISTINCT odi_number) n FROM fct_complaints
+      WHERE model = 'GOLF' AND complaint_filed_date IS NOT NULL GROUP BY y ORDER BY n DESC, y LIMIT 1
+  - id: sql-13
+    type: sql
+    question: Combien de modèles Volkswagen différents ont au moins un rappel ?
+    expect: scalar
+    reference_sql: SELECT count(DISTINCT model) FROM fct_recalls
+  - id: sql-14
+    type: sql
+    question: Combien de plaintes mentionnent un incendie pour l'Atlas Cross Sport ?
+    expect: scalar
+    reference_sql: SELECT count(DISTINCT odi_number) FROM fct_complaints WHERE model = 'ATLAS CROSS SPORT' AND fire
+
+  # --- Out of scope: must answer "je ne sais pas" ----------------------------------------------------
+  - id: oos-01
+    type: out_of_scope
+    question: Quels sont les rappels de la Renault Clio ?
+  - id: oos-02
+    type: out_of_scope
+    question: Quelle est la recette de la tarte aux pommes ?
+  - id: oos-03
+    type: out_of_scope
+    question: Quel est le prix d'une Golf neuve en France ?
+  - id: oos-04
+    type: out_of_scope
+    question: Qui a gagné la Coupe du monde de football 2018 ?
+  - id: oos-05
+    type: out_of_scope
+    question: Comment changer une roue de vélo ?
+  - id: oos-06
+    type: out_of_scope
+    question: Quelle est la consommation de carburant d'une Peugeot 208 ?
+  - id: oos-07
+    type: out_of_scope
+    question: Quels sont les horaires d'ouverture d'un concessionnaire Volkswagen à Lyon ?
+  - id: oos-08
+    type: out_of_scope
+    question: What is the capital of Australia?

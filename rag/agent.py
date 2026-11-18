@@ -18,6 +18,7 @@ from rag.llm import ChatModel
 from rag.retrieval import RetrievalResult
 from rag.search import Hit
 from rag.sql_tool import SCHEMA_DOC, SqlResult
+from rag.tracing import NullTrace, now
 
 DONT_KNOW = (
     "Je ne sais pas : je n'ai trouvé aucune information fiable sur ce point dans les rappels, "
@@ -97,6 +98,12 @@ def is_quantitative(question: str) -> bool:
     return bool(_QUANTITATIVE.search(question))
 
 
+RECONSIDER_PROMPT = (
+    "The passages above were selected as relevant to the question. Read them again: if one of them "
+    "answers it, even partially, answer from it with citations [S#]. Only if none is related, reply "
+    "with the refusal sentence."
+)
+
 RETRY_PROMPT = (
     "The last tool call did not work ({failure}). Do not give up yet: fix the SQL (check the column names in "
     "the schema; fct_complaints has no category column, join bridge_complaint_component on odi_number), "
@@ -142,6 +149,8 @@ class Answer:
     prompt_tokens: int = 0
     completion_tokens: int = 0
     latency_ms: int = 0
+    context: list[str] = field(default_factory=list)  # tool outputs seen by the LLM (faithfulness eval)
+    trace_id: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -174,7 +183,7 @@ class Agent:
                 state["by_chunk"][hit.chunk_id] = source
             page = f", page {hit.page_start}" if hit.page_start else ""
             blocks.append(f"[{source.id}] {hit.title}{page}\n{hit.content[: self.passage_chars]}")
-        state["evidence"] = True
+        state["evidence"] = state["passages"] = True
         return "\n\n".join(blocks), f"{len(result.hits)} passages"
 
     def _query_sql(self, sql: str, state: dict[str, Any]) -> tuple[str, str]:
@@ -195,7 +204,7 @@ class Agent:
         return result.as_text(), f"{len(result.rows)} rows"
 
     def _run_tool(self, name: str, args: dict[str, Any], state: dict[str, Any]) -> str:
-        start = time.perf_counter()
+        start, started = time.perf_counter(), now()
         state["failure"] = None
         if isinstance(args, str):  # some models send JSON as a string
             try:
@@ -211,6 +220,7 @@ class Agent:
             state["failure"] = text
         state["outputs"].append(text)
         state["calls"].append(ToolCall(name, args, summary, int((time.perf_counter() - start) * 1000)))
+        state["trace"].tool(name=name, arguments=args, output=text, summary=summary, start=started, end=now())
         return text
 
     # --- loop ----------------------------------------------------------------
@@ -218,30 +228,38 @@ class Agent:
     def _prefetch(self, question: str, state: dict[str, Any]) -> str:
         """Retrieve passages for the raw question before the first LLM call: small local models
         often skip the search tool, so the documents are always in context."""
-        start = time.perf_counter()
+        start, started = time.perf_counter(), now()
         text, summary = self._search_docs(question, state)
-        state["calls"].append(ToolCall("search_docs", {"query": question, "auto": True}, summary,
-                                       int((time.perf_counter() - start) * 1000)))
+        args = {"query": question, "auto": True}
+        state["calls"].append(ToolCall("search_docs", args, summary, int((time.perf_counter() - start) * 1000)))
         state["outputs"].append(text)
+        state["trace"].tool(name="search_docs", arguments=args, output=text, summary=summary, start=started, end=now())
         state["failure"] = None  # a failed prefetch must not trigger the retry prompt
         if text.startswith("NO_RELEVANT_DOCUMENTS"):
             return f"{question}\n\n(No relevant passage was found in the documents for this question.)"
         return f"{question}\n\nPassages retrieved for this question:\n\n{text}"
 
-    def ask(self, question: str) -> Answer:
+    def ask(self, question: str, trace: NullTrace | None = None) -> Answer:
         start = time.perf_counter()
+        trace = trace or NullTrace()
         state: dict[str, Any] = {"sources": [], "by_chunk": {}, "sql": [], "calls": [], "evidence": False,
-                                 "failure": None, "outputs": []}
+                                 "failure": None, "outputs": [], "trace": trace, "passages": False}
         messages: list[dict[str, Any]] = [
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": self._prefetch(question, state)},
         ]
         answer = Answer(question=question, answer="")
         final = ""
-        retried = asked_sql = False
+        retried = asked_sql = reconsidered = False
         for step in range(self.max_steps + 1):
             last = step == self.max_steps  # last turn: no tools, the model must conclude
+            started = now()
             reply = self.llm.chat(messages, tools=None if last else TOOLS)
+            trace.generation(
+                model=getattr(self.llm, "model", "?"), messages=list(messages),
+                output={"content": reply.content, "tool_calls": reply.tool_calls}, start=started, end=now(),
+                prompt_tokens=reply.prompt_tokens, completion_tokens=reply.completion_tokens,
+            )
             answer.llm_calls += 1
             answer.prompt_tokens += reply.prompt_tokens
             answer.completion_tokens += reply.completion_tokens
@@ -260,6 +278,14 @@ class Agent:
                 messages.append({"role": "assistant", "content": reply.content})
                 messages.append({"role": "user", "content": SQL_PROMPT})
                 continue
+            if (not calls and not last and not reconsidered and _is_dont_know(reply.content)
+                    and state["passages"] and not is_quantitative(question)):
+                # Small models refuse too often although a relevant passage (above the rerank
+                # threshold) was given: one invitation to re-read them; refusing stays allowed.
+                reconsidered = True
+                messages.append({"role": "assistant", "content": reply.content})
+                messages.append({"role": "user", "content": RECONSIDER_PROMPT})
+                continue
             if not calls:
                 final = reply.content
                 break
@@ -275,7 +301,10 @@ class Agent:
 
         answer.tool_calls = state["calls"]
         answer.sql = state["sql"]
-        if not state["evidence"] or not final or _is_dont_know(final):
+        sql_answered = any(q["rows"] and not q["error"] for q in state["sql"])
+        # A number / ranking without a successful query would come from a few passages: refuse instead.
+        unbacked_count = is_quantitative(question) and not sql_answered
+        if not state["evidence"] or not final or _is_dont_know(final) or unbacked_count:
             answer.answer, answer.dont_know = DONT_KNOW, True
             answer.sources = []
         else:
@@ -286,10 +315,15 @@ class Agent:
             answer.answer = _drop_dont_know_tail(final)
             answer.cited = bool(cited)
             # Uncited answer: show the passages only if the answer did not come from SQL.
-            sql_answered = any(q["rows"] and not q["error"] for q in state["sql"])
             answer.sources = cited or ([] if sql_answered else state["sources"])
             answer.unsupported_numbers = unsupported_numbers(answer.answer, question, state["outputs"])
         answer.latency_ms = int((time.perf_counter() - start) * 1000)
+        answer.context = state["outputs"]
+        answer.trace_id = trace.id
+        trace.end(output=answer.answer, metadata={
+            "dont_know": answer.dont_know, "cited": answer.cited, "latency_ms": answer.latency_ms,
+            "unsupported_numbers": answer.unsupported_numbers, "llm_calls": answer.llm_calls,
+        })
         return answer
 
 

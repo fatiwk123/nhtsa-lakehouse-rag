@@ -103,6 +103,7 @@ services:
       POSTGRES_HOST: postgres
       MINIO_ENDPOINT: http://minio:9000
       OLLAMA_URL: http://ollama:11434
+      LANGFUSE_HOST: http://langfuse:3000
     depends_on:
       postgres:
         condition: service_healthy
@@ -120,6 +121,33 @@ services:
       - api
     ports:
       - "8501:8501"
+
+  # --- Phase 5: LLM observability (optional: docker compose --profile observability up -d langfuse) ---
+  # Langfuse v2 only needs Postgres: it reuses the stack's server, in its own schema.
+  langfuse:
+    image: langfuse/langfuse:2.95.11
+    profiles: ["observability"]
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=langfuse
+      NEXTAUTH_URL: http://localhost:3001
+      NEXTAUTH_SECRET: ${LANGFUSE_NEXTAUTH_SECRET:-local-dev-secret}
+      SALT: ${LANGFUSE_SALT:-local-dev-salt}
+      TELEMETRY_ENABLED: "false"
+      # Headless init: organisation, project, API keys and a local admin account.
+      LANGFUSE_INIT_ORG_ID: nhtsa
+      LANGFUSE_INIT_ORG_NAME: NHTSA lakehouse
+      LANGFUSE_INIT_PROJECT_ID: nhtsa-rag
+      LANGFUSE_INIT_PROJECT_NAME: nhtsa-rag
+      LANGFUSE_INIT_PROJECT_PUBLIC_KEY: ${LANGFUSE_INIT_PUBLIC_KEY:-pk-lf-local}
+      LANGFUSE_INIT_PROJECT_SECRET_KEY: ${LANGFUSE_INIT_SECRET_KEY:-sk-lf-local}
+      LANGFUSE_INIT_USER_EMAIL: admin@langfuse.local
+      LANGFUSE_INIT_USER_NAME: admin
+      LANGFUSE_INIT_USER_PASSWORD: ${LANGFUSE_ADMIN_PASSWORD:-admin12345}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "3001:3000"
 
 volumes:
   ollama_models:

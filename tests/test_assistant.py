@@ -226,3 +226,27 @@ def test_sql_answer_does_not_list_unrelated_passages():
         LlmReply("D'après la base : 52 plaintes."),
     ])
     assert Agent(llm, search_ok, sql).ask("Combien ?").sources == []
+
+
+def test_refusal_with_relevant_passages_gets_one_reconsideration():
+    from rag.agent import RECONSIDER_PROMPT
+
+    llm = ScriptedLlm([LlmReply(DONT_KNOW), LlmReply("Le tube peut se boucher [S1].")])
+    ans = Agent(llm, search_ok, no_sql).ask("Quel risque avec le tube de climatisation ?")
+    assert llm.calls[1][-1]["content"] == RECONSIDER_PROMPT and not ans.dont_know and ans.cited
+
+
+def test_refusal_is_kept_after_reconsideration():
+    llm = ScriptedLlm([LlmReply(DONT_KNOW), LlmReply(DONT_KNOW)])
+    assert Agent(llm, search_ok, no_sql).ask("Question sans réponse ?").dont_know
+
+
+def test_count_without_successful_sql_is_refused():
+    def sql(q):
+        return SqlResult(sql=q, error="Binder Error")
+
+    llm = ScriptedLlm([
+        LlmReply("Il y a 21 rappels [S1]."),  # count from passages
+        LlmReply("Il y a 21 rappels [S1]."),  # ignores the SQL request
+    ])
+    assert Agent(llm, search_ok, sql).ask("Combien de rappels airbags ?").dont_know

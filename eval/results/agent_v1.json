@@ -1,0 +1,1285 @@
+{
+  "model": "qwen3:4b-instruct",
+  "summary": {
+    "questions": 56,
+    "accuracy": {
+      "doc": 0.882,
+      "sql": 0.643,
+      "out_of_scope": 1.0
+    },
+    "overall_accuracy": 0.839,
+    "doc_answered": 0.912,
+    "doc_cited": 0.912,
+    "doc_citation_precision": 0.989,
+    "false_refusals": 3,
+    "hallucinated_refusal_misses": 0,
+    "answers_with_unsupported_numbers": 0.111,
+    "latency_p50_s": 129.8,
+    "latency_p95_s": 178.7,
+    "tokens_per_question": 3236,
+    "llm_calls_per_question": 1.46,
+    "cost_per_question_usd": 0.0,
+    "price_per_m_tokens_usd": {
+      "input": 0.0,
+      "output": 0.0
+    }
+  },
+  "rows": [
+    {
+      "id": "doc-01",
+      "type": "doc",
+      "question": "Pourquoi les Golf 2018 ont-elles été rappelées pour le freinage ?",
+      "answer": "Les voitures Golf 2018 ont été rappelées pour le freinage en raison d’un défaut dans les calipers de frein. [S2] Cela concerne les véhicules Golf (2018), Golf GTI (2018), Golf Sportwagen (2018), Atlas (2018), Beetle (2018) et Passat (2018). Le défaut consiste en une couche insuffisante sur les pistons des calipers de frein, ce qui peut réduire la performance des freins. Cette situation augmente le risque d'accident. Le remède consiste à informer les propriétaires et à effectuer une intervention sur les calipers, au coût de l'entreprise.",
+      "dont_know": false,
+      "latency_ms": 195244,
+      "llm_calls": 1,
+      "tokens": 2766,
+      "prompt_tokens": 2594,
+      "completion_tokens": 172,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": true,
+      "cited": true,
+      "citation_precision": 1.0,
+      "mentions_ok": true,
+      "correct": true
+    },
+    {
+      "id": "doc-02",
+      "type": "doc",
+      "question": "Quel est le remède du rappel 18V369000 ?",
+      "answer": "Le remède du rappel 18V369000 consiste à effectuer le vidage de tous les quatre calipers de frein [S2]. Initialement, le rappel prévoyait le remplacement des calipers affectés, mais à partir du 2 juillet 2018, la procédure de réparation a été modifiée pour ne plus nécessiter de remplacement, et se limiter à un simple vidage des calipers [S2]. Cela vise à corriger le défaut de couche insuffisante sur les pistons des calipers de frein, qui pouvait entraîner une performance réduite des freins [S1]. \n\nLes véhicules concernés doivent être arrêtés avant vente ou location jusqu'à ce que le défaut soit corrigé [S5]. Aucun véhicule ne sera vendu ou mis en location avant réparation [S5].",
+      "dont_know": false,
+      "latency_ms": 132165,
+      "llm_calls": 1,
+      "tokens": 2653,
+      "prompt_tokens": 2448,
+      "completion_tokens": 205,
+      "unsupported_numbers": [
+        "2"
+      ],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": true,
+      "cited": true,
+      "citation_precision": 1.0,
+      "mentions_ok": false,
+      "correct": false
+    },
+    {
+      "id": "doc-03",
+      "type": "doc",
+      "question": "Quel problème touche le réservoir de carburant des Atlas 2018 ?",
+      "answer": "Le problème touchant le réservoir de carburant des Atlas 2018 est une fuite de carburant due à une erreur de fabrication, ce qui peut entraîner un risque de feu si une source d'ignition est présente [S1]. Ce défaut est lié à une insuffisance de la épaisseur du réservoir, ce qui fait que les véhicules ne respectent pas les exigences de la norme fédérale FMVSS n°301 sur l'intégrité du système de carburant [S3]. La mesure corrective consiste à remplacer le réservoir de carburant gratuitement par un dealer [S1][S2].",
+      "dont_know": false,
+      "latency_ms": 116136,
+      "llm_calls": 1,
+      "tokens": 2483,
+      "prompt_tokens": 2331,
+      "completion_tokens": 152,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": true,
+      "cited": true,
+      "citation_precision": 1.0,
+      "mentions_ok": true,
+      "correct": true
+    },
+    {
+      "id": "doc-04",
+      "type": "doc",
+      "question": "Que se passe-t-il avec l'airbag conducteur des Tiguan Limited 2018 ?",
+      "answer": "L'airbag conducteur des Tiguan Limited 2018 est soumis à un rappel de sécurité. [S1] Le rappel 18V102000, déposé le 9 février 2018, concerne certains véhicules Tiguan Limited de 2017 à 2018. Il porte sur le système d'airbag frontal du conducteur, qui n'était pas conçu pour être utilisé dans les véhicules vendus aux États-Unis. Cela signifie que ces véhicules ne respectent pas la norme fédérale FMVSS 208 sur la protection des occupants en cas de collision. En cas d'accident, l'airbag pourrait ne pas protéger correctement le conducteur, augmentant ainsi le risque d'injury. [S1]\n\nLe remède consiste à remplacer le volant et l'airbag frontal du conducteur, gratuitement, par les concessionnaires. [S1] Le rappel a été annoncé le 16 février 2018, et les concessionnaires doivent vérifier leur inventaire quotidien pour identifier les véhicules concernés. [S2] Le total des véhicules affectés est de 3 768, dont 1 835 sont en inventaire. [S2]\n\nCe rappel est distinct du rappel 18V375000 concernant l'airbag passager, qui porte sur une autre partie du véhicule. [S3]",
+      "dont_know": false,
+      "latency_ms": 150611,
+      "llm_calls": 1,
+      "tokens": 2753,
+      "prompt_tokens": 2421,
+      "completion_tokens": 332,
+      "unsupported_numbers": [
+        "9"
+      ],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": true,
+      "cited": true,
+      "citation_precision": 0.6666666666666666,
+      "mentions_ok": null,
+      "correct": true
+    },
+    {
+      "id": "doc-05",
+      "type": "doc",
+      "question": "Pourquoi les boulons de support moteur du Tiguan 2018 posent-ils problème ?",
+      "answer": "Les boulons de support moteur du Tiguan 2018 posent problème car ils n'ont pas été correctement serrés lors de la fabrication. Cela peut entraîner une panne inattendue du moteur ou une perte de puissance, augmentant ainsi le risque de collision [S1]. Volkswagen a lancé un rappel pour corriger ce défaut, en remplaçant gratuitement les boulons de support moteur aux ateliers [S1]. Ce rappel s'applique aux véhicules Tiguan de 2018, notamment aux modèles à enceinte longue (LWB), et a commencé le 26 mars 2018 [S1].",
+      "dont_know": false,
+      "latency_ms": 116688,
+      "llm_calls": 1,
+      "tokens": 2510,
+      "prompt_tokens": 2352,
+      "completion_tokens": 158,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": true,
+      "cited": true,
+      "citation_precision": 1.0,
+      "mentions_ok": null,
+      "correct": true
+    },
+    {
+      "id": "doc-06",
+      "type": "doc",
+      "question": "What is the issue with the rear shock absorber on the 2018 Tiguan LWB?",
+      "answer": "The issue with the rear shock absorber on the 2018 Tiguan LWB is that a lower loop of the rear shock absorber may separate from its base due to an incorrect welding process in the manufacturing supply chain. This defect could lead to a loss of vehicle control, increasing the risk of a crash. [S1] The recall, identified as 18V262000, was announced by Volkswagen Group of America, Inc. on April 25, 2018, and began on May 30, 2018. As a remedy, Volkswagen will notify owners and have dealers inspect the rear shock absorbers, replacing them as necessary at no cost to the owner. [S2] Drivers may hear noise from the rear while driving, and if this occurs, they should stop safely and contact a dealer for inspection. [S3][S4][S5]",
+      "dont_know": false,
+      "latency_ms": 114094,
+      "llm_calls": 1,
+      "tokens": 2445,
+      "prompt_tokens": 2254,
+      "completion_tokens": 191,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": true,
+      "cited": true,
+      "citation_precision": 1.0,
+      "mentions_ok": null,
+      "correct": true
+    },
+    {
+      "id": "doc-07",
+      "type": "doc",
+      "question": "Quel défaut concerne l'écrou de la rotule de suspension avant du Tiguan 2018 ?",
+      "answer": "Le défaut concernant l'écrou de la rotule de suspension avant du Tiguan 2018 est la possibilité que l'écrou (ou la vis) qui retient la rotule de suspension avant soit trop loose ou mal serré. Cela peut entraîner la séparation de la rotule, ce qui compromet la stabilité du véhicule, notamment en termes de direction et de traction, augmentant ainsi le risque de collision [S1].\n\nCe défaut est couvert par le rappel 18V324000, déposé le 16 mai 2018, concernant les véhicules Tiguan 2018. Le remède consiste en la remplacement du nut (écrou) du bas de la rotule de suspension avant, à la boutique, gratuitement. [S1]",
+      "dont_know": false,
+      "latency_ms": 129807,
+      "llm_calls": 1,
+      "tokens": 2637,
+      "prompt_tokens": 2452,
+      "completion_tokens": 185,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": true,
+      "cited": true,
+      "citation_precision": 1.0,
+      "mentions_ok": null,
+      "correct": true
+    },
+    {
+      "id": "doc-08",
+      "type": "doc",
+      "question": "Pourquoi l'airbag passager frontal des Atlas et Tiguan 2018 a-t-il été rappelé ?",
+      "answer": "L'airbag passager frontal des Atlas et Tiguan 2018 a été rappelé en raison d'un défaut de fonctionnement du module d'inflation, qui pouvait entraîner une défaillance ou une déformation lors de la détection d'un choc [S1]. Ce défaut augmentait le risque d'injury en cas de collision, car l'airbag ne se déployait pas correctement. Le rappel a été lancé le 19 juillet 2018, et Volkswagen a proposé de remplacer gratuitement le module d'inflation de l'airbag passager frontal [S1].\n\nIl convient de noter que d'autres rappels ont été déclenchés pour des défauts liés à d'autres composants de sécurité, comme des capteurs mal fabriqués ou des systèmes de détection de passagers défaillants, mais le rappel principal concernant l'airbag passager frontal des modèles 2018 est lié à la défaillance du module d'inflation [S1].",
+      "dont_know": false,
+      "latency_ms": 138917,
+      "llm_calls": 1,
+      "tokens": 2705,
+      "prompt_tokens": 2471,
+      "completion_tokens": 234,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": true,
+      "cited": true,
+      "citation_precision": 1.0,
+      "mentions_ok": null,
+      "correct": true
+    },
+    {
+      "id": "doc-09",
+      "type": "doc",
+      "question": "Quel problème de verrouillage de colonne de direction touche les Golf 2018 ?",
+      "answer": "Le problème de verrouillage de colonne de direction qui touche les Golf 2018 concerne un défaut de la commande anti-fuite du verrouillage de la colonne de direction. Ce défaut peut entraîner la possibilité de retirer la clé du contact alors que le levier de vitrage n'est pas en position « Park », ce qui contredit les exigences de la norme FMVSS 114 sur la prévention du vol et de la dérive [S1]. \n\nPour corriger ce défaut, Volkswagen installe un nouveau capteur (situé en dehors de la boîte de vitrage) et un autre module de contrôle, en désactivant simultanément le capteur existant sur le levier de vitrage. Ces composants sont actuellement en développement, et les numéros de pièce n'ont pas encore été publiés [S4].\n\nCe rappel s'applique aux modèles Golf et Golf Sportwagen de 2015 à 2018 [S1].",
+      "dont_know": false,
+      "latency_ms": 159161,
+      "llm_calls": 1,
+      "tokens": 2931,
+      "prompt_tokens": 2700,
+      "completion_tokens": 231,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": true,
+      "cited": true,
+      "citation_precision": 1.0,
+      "mentions_ok": null,
+      "correct": true
+    },
+    {
+      "id": "doc-10",
+      "type": "doc",
+      "question": "Quel est le défaut du module LED du toit panoramique du Tiguan ?",
+      "answer": "Le défaut du module LED du toit panoramique du Tiguan 2018 est un risque de court-circuit dans le module LED de la barre d'éclairage ambiant du toit panoramique, causé par une humidité élevée dans le module (due à l'environnement ou à laisser le toit panoramique ouvert pendant la pluie) [S3]. Ce court-circuit peut entraîner un risque de feu [S1].  \n\nLe remède consiste à désactiver le courant alimentant le module LED du toit panoramique, gratuitement, par les concessionnaires [S2]. Une action de service future permettra de réactiver de manière sécurisée cette fonction [S1].  \n\nCe rappel concerne des véhicules de 2018, produits entre le 8 décembre 2016 et le 7 juillet 2018, avec un certain intervalle de numéro de série [S3].  \n\n[ S1 ] [ S2 ] [ S3 ]",
+      "dont_know": false,
+      "latency_ms": 123584,
+      "llm_calls": 1,
+      "tokens": 2528,
+      "prompt_tokens": 2299,
+      "completion_tokens": 229,
+      "unsupported_numbers": [
+        "8",
+        "7"
+      ],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": true,
+      "cited": true,
+      "citation_precision": 1.0,
+      "mentions_ok": null,
+      "correct": true
+    },
+    {
+      "id": "doc-11",
+      "type": "doc",
+      "question": "Pourquoi le support d'étrier de frein des Atlas et Passat a-t-il été rappelé ?",
+      "answer": "Le support d'étrier de frein des Atlas et Passat a été rappelé parce que les boulons de fixation du support de l'étrier de frein ne sont pas assez serrés sur certains véhicules, ce qui peut permettre au support de se déplacer, réduisant ainsi la performance de freinage ou causant une perte de contrôle de la voiture et augmentant le risque d'accident [S1].",
+      "dont_know": false,
+      "latency_ms": 123583,
+      "llm_calls": 1,
+      "tokens": 2652,
+      "prompt_tokens": 2556,
+      "completion_tokens": 96,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": true,
+      "cited": true,
+      "citation_precision": 1.0,
+      "mentions_ok": null,
+      "correct": true
+    },
+    {
+      "id": "doc-12",
+      "type": "doc",
+      "question": "Quel est le risque lié au tube d'évacuation de la climatisation sur l'Atlas 2018 ?",
+      "answer": "Je ne sais pas : je n'ai trouvé aucune information fiable sur ce point dans les rappels, plaintes et documents NHTSA indexés.",
+      "dont_know": true,
+      "latency_ms": 109206,
+      "llm_calls": 1,
+      "tokens": 2550,
+      "prompt_tokens": 2517,
+      "completion_tokens": 33,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": false,
+      "cited": false,
+      "citation_precision": null,
+      "mentions_ok": null,
+      "correct": false
+    },
+    {
+      "id": "doc-13",
+      "type": "doc",
+      "question": "Quel défaut touche le phare LED côté passager des Jetta 2019 ?",
+      "answer": "Le défaut concernant le phare LED côté passager des Jetta 2019 consiste en une position incorrecte du phare de côté passager (côté conducteur), ce qui réduit la visibilité du conducteur en période sombre [S1]. Ce défaut fait dévier les exigences de la norme fédérale FMVSS 108 sur les lampes, les dispositifs réfléchissants et les équipements associés [S1]. En conséquence, le véhicule ne respecte pas les exigences de sécurité en matière d'éclairage [S1]. Le remède consiste à remplacer le phare de côté passager [S1]. \n\nCe rappel a été déposé par Volkswagen Group of America, Inc. le 26 septembre 2018, et concerne 28 véhicules aux États-Unis et 391 véhicules au Canada [S2]. Les véhicules affectés sont ceux équipés de phares LED [S3]. Les détaillants doivent effectuer la réparation avant la livraison du véhicule à un client [S2]. \n\n[S1] [S2] [S3] [S4] [S5]",
+      "dont_know": false,
+      "latency_ms": 133235,
+      "llm_calls": 1,
+      "tokens": 2578,
+      "prompt_tokens": 2308,
+      "completion_tokens": 270,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": true,
+      "cited": true,
+      "citation_precision": 1.0,
+      "mentions_ok": null,
+      "correct": true
+    },
+    {
+      "id": "doc-14",
+      "type": "doc",
+      "question": "Quel problème de siège arrière concerne les e-Golf et Golf R 2018 ?",
+      "answer": "Un problème de siège arrière concerne les e-Golf et Golf R 2018 : le guide des head restraints du siège arrière peut être incorrectement soudé à la structure du siège [S1]. Cela peut réduire la stabilité des ceintures de sécurité en cas de collision, augmentant ainsi le risque d'injury [S1]. Le remède consiste à inspecter les guides et, si nécessaire, à remplacer le cadre arrière du siège, gratuitement pour les propriétaires [S1].",
+      "dont_know": false,
+      "latency_ms": 127398,
+      "llm_calls": 1,
+      "tokens": 2584,
+      "prompt_tokens": 2462,
+      "completion_tokens": 122,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": true,
+      "cited": true,
+      "citation_precision": 1.0,
+      "mentions_ok": null,
+      "correct": true
+    },
+    {
+      "id": "doc-15",
+      "type": "doc",
+      "question": "Pourquoi le tuyau de carburant de la Golf R 2018 peut-il se détacher ?",
+      "answer": "Le tuyau de carburant de la Golf R 2018 peut se détacher en raison de déviations dimensionnelles dans la fabrication du tuyau de carburant, ce qui affecte la fixation du guide de l'adaptateur rapide (quick connector) au tuyau de carburant [S2]. Ces déviations entraînent un mauvais assemblage du guide, ce qui peut provoquer un décollement du connecteur, entraînant une fuite de carburant dans le compartiment moteur [S1]. Cette fuite de carburant, en présence d'une source d'ignition, peut augmenter le risque d'incendie [S5].\n\nLe défaut est dû à des variations de dimensions dans le tuyau de carburant, qui affectent le support de montage utilisé lors de la fabrication [S5]. Ce problème concerne 516 véhicules de 2018 Golf R produits entre le 13 mars 2018 et le 8 août 2018 [S2]. Le remède consiste à sécuriser la connexion du tuyau de carburant par un remplacement gratuit, effectué par les concessionnaires [S1].",
+      "dont_know": false,
+      "latency_ms": 154650,
+      "llm_calls": 1,
+      "tokens": 2681,
+      "prompt_tokens": 2413,
+      "completion_tokens": 268,
+      "unsupported_numbers": [
+        "8"
+      ],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": true,
+      "cited": true,
+      "citation_precision": 1.0,
+      "mentions_ok": null,
+      "correct": true
+    },
+    {
+      "id": "doc-16",
+      "type": "doc",
+      "question": "Pourquoi les ressorts de suspension arrière des Golf et Jetta 2019 ont-ils été rappelés ?",
+      "answer": "Les ressorts de suspension arrière des Golf et Jetta 2019 ont été rappelés parce que ces ressorts peuvent se fissurer prématurément, ce qui peut endommager une roue arrière et provoquer une perte de contrôle du véhicule, augmentant ainsi le risque de collision [S2]. Ce rappel s'applique aux modèles 2019 de Golf et Jetta, et les concessionnaires remplacent gratuitement les ressorts arrière de l'axe arrière [S2].",
+      "dont_know": false,
+      "latency_ms": 152403,
+      "llm_calls": 1,
+      "tokens": 2968,
+      "prompt_tokens": 2850,
+      "completion_tokens": 118,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": true,
+      "cited": true,
+      "citation_precision": 1.0,
+      "mentions_ok": true,
+      "correct": true
+    },
+    {
+      "id": "doc-17",
+      "type": "doc",
+      "question": "Quel avertissement manque sur le combiné d'instruments de la Beetle 2019 ?",
+      "answer": "L'avertissement manquant sur le combiné d'instruments de la Beetle 2019 est une alerte visuelle en cas de défaillance du système de freinage. Ce défaut, lié au système électrique de l'ensemble instrument, empêche le combiné d'instrument de fournir une notification visuelle lorsque le système de freinage est détecté comme en panne. Cela entraîne une non-conformité avec les normes fédérales FMVSS 135 (systèmes de freins) et FMVSS 101 (commandes et affichages), augmentant le risque de perte de contrôle du véhicule lors d'une freinage d'urgence [S1]. \n\nLe remède consiste à mettre à jour le logiciel de l'ensemble instrument (pour les véhicules de type critère 01) ou à remplacer l'ensemble instrument (pour les véhicules de type critère 02) [S2]. Ce défaut ne concerne que les véhicules 2019 sans indicateur de usure des plaquettes de frein, produits entre août 2018 et janvier 2019 [S3].",
+      "dont_know": false,
+      "latency_ms": 141036,
+      "llm_calls": 1,
+      "tokens": 2676,
+      "prompt_tokens": 2410,
+      "completion_tokens": 266,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": true,
+      "cited": true,
+      "citation_precision": 1.0,
+      "mentions_ok": null,
+      "correct": true
+    },
+    {
+      "id": "doc-18",
+      "type": "doc",
+      "question": "Quel problème d'airbag latéral concerne les Atlas 2019 et Passat 2020 ?",
+      "answer": "Le problème d'airbag latéral concernant les Atlas 2019 et Passat 2020 est lié à l'installation incorrecte d'un airbag de côté (side/window) sur certaines véhicules. [S2] Cela peut entraîner un non-déploiement de l'airbag lors d'un choc latéral, augmentant ainsi le risque d'injury. Le remède consiste à inspecter et à remplacer les airbags latéraux, gratuitement, par les concessionnaires. Ce rappel s'applique aux Atlas 2019 et aux Passat 2020.",
+      "dont_know": false,
+      "latency_ms": 137912,
+      "llm_calls": 1,
+      "tokens": 2752,
+      "prompt_tokens": 2608,
+      "completion_tokens": 144,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": true,
+      "cited": true,
+      "citation_precision": 1.0,
+      "mentions_ok": null,
+      "correct": true
+    },
+    {
+      "id": "doc-19",
+      "type": "doc",
+      "question": "Quelle erreur contient l'étiquette d'information pneus du Tiguan 2019 ?",
+      "answer": "L'étiquette d'information pneus du Tiguan 2019 contient des spécifications incorrectes concernant les dimensions des pneus et la pression d'inflation. Cela entraîne un non-conformité avec la norme fédérale FMVSS 110 « Choix des pneus et des jantes ». [S1] Cette erreur provient d'une impression erronée d'une version non publiée de l'étiquette de pneus, lors de la production des véhicules. [S4] Le risque est que les conducteurs ajustent mal la pression d'inflation ou installent un pneu de taille inappropriée, ce qui peut augmenter le risque d'accident de la route. [S3] Le remède consiste à installer une nouvelle étiquette d'information pneus. [S5]",
+      "dont_know": false,
+      "latency_ms": 120889,
+      "llm_calls": 1,
+      "tokens": 2508,
+      "prompt_tokens": 2320,
+      "completion_tokens": 188,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": true,
+      "cited": true,
+      "citation_precision": 1.0,
+      "mentions_ok": null,
+      "correct": true
+    },
+    {
+      "id": "doc-20",
+      "type": "doc",
+      "question": "Pourquoi le réglage des phares des Passat et Atlas a-t-il fait l'objet d'un rappel ?",
+      "answer": "Le réglage des phares des Passat et Atlas a fait l'objet d'un rappel parce que, lors de l'installation des phares dans les usines, des instructions incorrectes ou manquantes ont été utilisées, ce qui a conduit à l'omission du cap d'empêchement de l'ajustement horizontal des phares [S1]. Cela signifie que les phares peuvent être ajustés hors spécifications, réduisant ainsi la visibilité pour le conducteur et les autres usagers de la route, ce qui augmente le risque d'accident [S2]. Ce défaut viole la norme fédérale FMVSS 108 sur les lampes, les dispositifs réfléchissants et les équipements associés [S2]. Le remède consiste à inspecter les véhicules afin de vérifier l'installation des caps et, si nécessaire, de les installer correctement [S5].",
+      "dont_know": false,
+      "latency_ms": 126053,
+      "llm_calls": 1,
+      "tokens": 2549,
+      "prompt_tokens": 2337,
+      "completion_tokens": 212,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": true,
+      "cited": true,
+      "citation_precision": 1.0,
+      "mentions_ok": null,
+      "correct": true
+    },
+    {
+      "id": "doc-21",
+      "type": "doc",
+      "question": "Quel est le problème de soudure de la pompe à jet du réservoir de l'Atlas 2019 ?",
+      "answer": "Le problème de soudure de la pompe à jet du réservoir de l'Atlas 2019 concerne la position incorrecte de la soude du jet de pompe dans le réservoir de carburant, ce qui peut entraîner une fuite de carburant. Cette fuite augmente le risque de feu en présence d'une source d'ignition, et peut également provoquer un arrêt de moteur en raison d'une distribution inégale du carburant [S1].\n\nCe défaut est couvert par un rappel (19V614000) lancé par Volkswagen Group of America, Inc. en 2019, concernant les véhicules Atlas 2019. Le remède consiste à remplacer gratuitement le réservoir de carburant. Le rappel a commencé le 30 août 2019 [S1].",
+      "dont_know": false,
+      "latency_ms": 157241,
+      "llm_calls": 1,
+      "tokens": 2907,
+      "prompt_tokens": 2708,
+      "completion_tokens": 199,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": true,
+      "cited": true,
+      "citation_precision": 1.0,
+      "mentions_ok": null,
+      "correct": true
+    },
+    {
+      "id": "doc-22",
+      "type": "doc",
+      "question": "What is wrong with the front wheel bearings of the 2019 Jetta GLI and Golf GTI?",
+      "answer": "The front wheel bearings in certain 2019 Jetta GLI and Golf GTI vehicles may have been improperly machined during production. This defect can cause excessive stress on the wheel, wheel bolts, or wheel bearings, potentially leading to steering, traction, or stability issues, or even breakage of the front wheels, which increases the risk of a crash. This issue is covered under NHTSA recall 19V879000, which affects specific production lots of the 2019 Jetta GLI and Golf GTI. The remedy involves a free replacement of the wheel bearing assemblies, wheels, and wheel bolts at dealerships. [S1][S3]",
+      "dont_know": false,
+      "latency_ms": 149958,
+      "llm_calls": 1,
+      "tokens": 2927,
+      "prompt_tokens": 2783,
+      "completion_tokens": 144,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": true,
+      "cited": true,
+      "citation_precision": 1.0,
+      "mentions_ok": null,
+      "correct": true
+    },
+    {
+      "id": "doc-23",
+      "type": "doc",
+      "question": "Quel défaut du servofrein électronique touche l'Arteon 2019 ?",
+      "answer": "Le défaut du servofrein électronique sur l'Arteon 2019 concerne une installation incorrecte du rod de pression d'entrée du boîtier de frein électronique, qui peut entraîner une force d'actuation accrue ou une déconnexion du rod [S1]. Cela peut réduire le rapport du frein et compromettre la performance du freinage, notamment en cas de perte de tension de 12 V, ce qui augmente le risque de collision [S2]. Ce défaut viole la norme FMVSS 135 sur les systèmes de freinage des véhicules légers [S1]. La solution consiste à inspecter et, si nécessaire, remplacer le boîtier de frein et/ou son montage [S4]. \n\nCette information provient du rappel NHTSA 20V135000 concernant les systèmes de freinage pour les modèles Arteon 2019 [S1].",
+      "dont_know": false,
+      "latency_ms": 132634,
+      "llm_calls": 1,
+      "tokens": 2637,
+      "prompt_tokens": 2409,
+      "completion_tokens": 228,
+      "unsupported_numbers": [
+        "12"
+      ],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": true,
+      "cited": true,
+      "citation_precision": 1.0,
+      "mentions_ok": null,
+      "correct": true
+    },
+    {
+      "id": "doc-24",
+      "type": "doc",
+      "question": "Pourquoi les vis d'étrier avant d'une Jetta 2020 ont-elles été rappelées ?",
+      "answer": "Les vis d'étrier avant d'une Jetta 2020 ont été rappelées parce que les boucles de fixation des calipers de frein peuvent venir se détacher, ce qui peut affecter les performances des freins et augmenter le risque de collision [S1]. Cette anomalie concerne spécifiquement les véhicules Jetta 2020, et Volkswagen a lancé un rappel pour remplacer gratuitement les quatre vis de caliper avant. Ce rappel a commencé le 1er juillet 2020 [S1].",
+      "dont_know": false,
+      "latency_ms": 128005,
+      "llm_calls": 1,
+      "tokens": 2692,
+      "prompt_tokens": 2569,
+      "completion_tokens": 123,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": true,
+      "cited": true,
+      "citation_precision": 1.0,
+      "mentions_ok": null,
+      "correct": true
+    },
+    {
+      "id": "doc-25",
+      "type": "doc",
+      "question": "Quel est le défaut des fusées de direction de l'Atlas Cross Sport ?",
+      "answer": "Le défaut des fusées de direction (ou knuckles de direction) de l'Atlas Cross Sport concerne une défaillance potentielle des éléments de direction lors de la fabrication, où l'un ou les deux knuckles peuvent avoir été endommagés [S2]. Cette défaillance peut entraîner une perte de direction, augmentant ainsi le risque de collision [S2]. Le remède consiste en un contrôle effectué par les concessionnaires, suivi éventuellement par un remplacement gratuit du knuckle [S2]. Ce rappel s'applique aux véhicules Atlas Cross Sport de 2020 à 2021 [S4].",
+      "dont_know": false,
+      "latency_ms": 122804,
+      "llm_calls": 1,
+      "tokens": 2586,
+      "prompt_tokens": 2439,
+      "completion_tokens": 147,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": true,
+      "cited": true,
+      "citation_precision": 1.0,
+      "mentions_ok": null,
+      "correct": true
+    },
+    {
+      "id": "doc-26",
+      "type": "doc",
+      "question": "Pourquoi les boulons d'ancrage des ceintures de troisième rangée du Tiguan 2020 sont-ils rappelés ?",
+      "answer": "Les boulons d'ancrage des ceintures de sécurité du troisième rangée du Tiguan 2020 sont rappelés parce que leur torsion pourrait être insuffisante en raison d'un traitement de reprise incorrect lors de la fabrication, ce qui peut entraîner une mauvaise performance des ceintures de sécurité en cas de collision [S2]. Cette défaut peut augmenter le risque d'injury pour les occupants assis dans la troisième rangée [S1]. Le rappel, numéroté 20V579000, a été lancé le 23 septembre 2020, et les propriétaires sont informés qu'aucun occupant ne doit utiliser la troisième rangée en raison du risque de sécurité [S1]. Le remède consiste en un programme de reprise du véhicule (repurchase) offert gratuitement [S3].",
+      "dont_know": false,
+      "latency_ms": 133101,
+      "llm_calls": 1,
+      "tokens": 2638,
+      "prompt_tokens": 2434,
+      "completion_tokens": 204,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": true,
+      "cited": true,
+      "citation_precision": 1.0,
+      "mentions_ok": null,
+      "correct": true
+    },
+    {
+      "id": "doc-27",
+      "type": "doc",
+      "question": "Quel est le problème des vis de rampe d'injection des Jetta 2018 ?",
+      "answer": "Je ne sais pas : je n'ai trouvé aucune information fiable sur ce point dans les rappels, plaintes et documents NHTSA indexés.",
+      "dont_know": true,
+      "latency_ms": 129388,
+      "llm_calls": 1,
+      "tokens": 2792,
+      "prompt_tokens": 2759,
+      "completion_tokens": 33,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": false,
+      "cited": false,
+      "citation_precision": null,
+      "mentions_ok": null,
+      "correct": false
+    },
+    {
+      "id": "doc-28",
+      "type": "doc",
+      "question": "Quel défaut des pneus Continental concerne l'Atlas ?",
+      "answer": "Je ne sais pas : je n'ai trouvé aucune information fiable sur ce point dans les rappels, plaintes et documents NHTSA indexés.",
+      "dont_know": true,
+      "latency_ms": 102290,
+      "llm_calls": 1,
+      "tokens": 2451,
+      "prompt_tokens": 2418,
+      "completion_tokens": 33,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": false,
+      "cited": false,
+      "citation_precision": null,
+      "mentions_ok": null,
+      "correct": false
+    },
+    {
+      "id": "doc-29",
+      "type": "doc",
+      "question": "Que se passe-t-il avec le système de détection du passager de l'Atlas ?",
+      "answer": "Le système de détection du passager de l'Atlas peut présenter un défaut lié à une anomalie dans le câblage du système de détection (également appelé Body Sense), intégré au système de chauffage du siège du passager. Ce défaut peut entraîner la désactivation de l'airbag frontal du passager, même lorsque le siège est occupé [S1][S3][S4][S5].\n\nLa conséquence est un risque accru d'injury lors d'un accident. Le remède consiste à remplacer, gratuitement, le mat de détection du passager et le câble de connexion, par un service effectué par un concessionnaire autorisé [S1][S2].\n\nCes rappels s'appliquent aux modèles Atlas de 2018 à 2021 et à l'Atlas Cross Sport de 2020 [S1], ainsi qu'aux modèles Atlas Cross Sport de 2021 à 2024 [S2]. Les lettres d'information aux propriétaires ont été envoyées en mars 2024 et septembre 2024 respectivement [S1][S2].",
+      "dont_know": false,
+      "latency_ms": 138778,
+      "llm_calls": 1,
+      "tokens": 2632,
+      "prompt_tokens": 2369,
+      "completion_tokens": 263,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": true,
+      "cited": true,
+      "citation_precision": 1.0,
+      "mentions_ok": null,
+      "correct": true
+    },
+    {
+      "id": "doc-30",
+      "type": "doc",
+      "question": "Pourquoi le capteur de pression des pneus (TPMS) a-t-il été rappelé sur les Golf et Jetta 2019 ?",
+      "answer": "Le capteur de pression des pneus (TPMS) a été rappelé sur les Golf et Jetta 2019 parce que le système de surveillance de la pression des pneus pouvait ne pas détecter une perte soudaine de pression dans tous les pneus, ce qui augmente le risque de collision [S1]. Ce rappel, portant le numéro 22V815000, concerne les modèles Golf et Jetta de 2019, ainsi que d'autres modèles, et vise à corriger ce défaut par une mise à jour logicielle du TPMS, offerte gratuitement aux propriétaires [S4]. Les lettres d'information ont été envoyées le 18 novembre 2022, et les propriétaires peuvent contacter le service client de Volkswagen au 1-800-893-5298 ou celui d'Audi au 1-800-253-2834 [S1].",
+      "dont_know": false,
+      "latency_ms": 181759,
+      "llm_calls": 1,
+      "tokens": 3187,
+      "prompt_tokens": 2958,
+      "completion_tokens": 229,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": true,
+      "cited": true,
+      "citation_precision": 1.0,
+      "mentions_ok": null,
+      "correct": true
+    },
+    {
+      "id": "doc-31",
+      "type": "doc",
+      "question": "Quel problème de contacteur d'allumage concerne les Golf et Jetta 2019 ?",
+      "answer": "Le problème de contacteur d'allumage concernant les Golf et Jetta 2019 est lié à un défaut de l'ignition switch (contacteur d'allumage) dans les véhicules équipés d'un commutateur classique. Ce défaut peut provoquer une panne de l'ensemble électrique, entraînant un arrêt du moteur en cours de route, ce qui augmente le risque de collision [S1].\n\nCe rappel, numéroté 23V604000, couvre les modèles suivants : Golf (2019), Golf GTI (2019), Golf Sportwagen (2019) et Jetta (2019, 2020). Le remède consiste à remplacer gratuitement le contacteur d'allumage au niveau des centres de service.",
+      "dont_know": false,
+      "latency_ms": 159920,
+      "llm_calls": 1,
+      "tokens": 2981,
+      "prompt_tokens": 2790,
+      "completion_tokens": 191,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": true,
+      "cited": true,
+      "citation_precision": 1.0,
+      "mentions_ok": null,
+      "correct": true
+    },
+    {
+      "id": "doc-32",
+      "type": "doc",
+      "question": "Quel est le risque de l'airbag conducteur des Beetle 2018-2019 ?",
+      "answer": "Le risque lié à l'airbag conducteur des Beetle 2018-2019 provient d'une dégradation du module d'inflation de l'airbag conducteur en raison de l'exposition prolongée à des conditions humides, chaudes et de cycles thermiques élevés. Cela peut entraîner une explosion de l'inflation, ce qui peut projeter des fragments métalliques vers le conducteur ou les occupants, entraînant une blessure grave ou la mort [S1].\n\nCe risque a été identifié dans le rappel 24V834000, concernant les véhicules Beetle de 2018 à 2019, et a été corrigé par le remplacement gratuit du module d'inflation de l'airbag conducteur.",
+      "dont_know": false,
+      "latency_ms": 147801,
+      "llm_calls": 1,
+      "tokens": 2873,
+      "prompt_tokens": 2697,
+      "completion_tokens": 176,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": true,
+      "cited": true,
+      "citation_precision": 1.0,
+      "mentions_ok": null,
+      "correct": true
+    },
+    {
+      "id": "doc-33",
+      "type": "doc",
+      "question": "Quelle pièce de direction peut se desserrer sur les Tiguan 2018 et Atlas 2018-2019 ?",
+      "answer": "La pièce de direction qui peut se desserrer sur les Tiguan 2018 et Atlas 2018-2019 est un **boulon de fixation du rail de direction** [S1]. Ce boulon, qui attache le rail de direction au châssis, peut corroder et se briser. Si cela se produit, la housse du rail de direction peut se rompre, ce qui entraîne une perte de contrôle de direction et augmente le risque de collision. Le remède consiste à remplacer gratuitement ce boulon au niveau du garage [S1].",
+      "dont_know": false,
+      "latency_ms": 138093,
+      "llm_calls": 1,
+      "tokens": 2775,
+      "prompt_tokens": 2641,
+      "completion_tokens": 134,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": true,
+      "cited": true,
+      "citation_precision": 1.0,
+      "mentions_ok": null,
+      "correct": true
+    },
+    {
+      "id": "doc-34",
+      "type": "doc",
+      "question": "Quel problème concerne le maître-cylindre de frein Beck/Arnley ?",
+      "answer": "Le problème concernant le maître-cylindre de frein Beck/Arnley est un **crippe insuffisant de la soupape de fluide**, ce qui peut entraîner une fuite de liquide de frein ou, dans des cas extrêmes, la rupture du cylindre [S1]. Cela peut réduire la capacité de freinage ou, dans des cas graves, provoquer une perte complète de fonctionnement des freins, augmentant ainsi le risque d'accident [S3]. Ce défaut est identifié dans les maîtres-cylindres de la marque Beck/Arnley, de la série 072-9831, installés sur des véhicules Volkswagen Jetta (2004-2018) et Volkswagen Beetle (2012-2019) [S2].",
+      "dont_know": false,
+      "latency_ms": 131382,
+      "llm_calls": 1,
+      "tokens": 2630,
+      "prompt_tokens": 2441,
+      "completion_tokens": 189,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "answered": true,
+      "cited": true,
+      "citation_precision": 1.0,
+      "mentions_ok": null,
+      "correct": true
+    },
+    {
+      "id": "sql-01",
+      "type": "sql",
+      "question": "Combien de plaintes moteur pour Volkswagen ont été déposées en 2025 ?",
+      "answer": "D'après la base : 52 plaintes moteur pour Volkswagen ont été déposées en 2025.",
+      "dont_know": false,
+      "latency_ms": 178749,
+      "llm_calls": 3,
+      "tokens": 9377,
+      "prompt_tokens": 9232,
+      "completion_tokens": 145,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages",
+        "query_sql:1 rows"
+      ],
+      "trace_id": null,
+      "expected": [
+        52
+      ],
+      "correct": true,
+      "sql": [
+        "SELECT count(DISTINCT c.odi_number) AS complaints FROM fct_complaints c JOIN bridge_complaint_component b ON b.odi_number = c.odi_number AND b.vehicle_key = c.vehicle_key WHERE b.category = 'ENGINE' AND year(c.complaint_filed_date) = 2025"
+      ]
+    },
+    {
+      "id": "sql-02",
+      "type": "sql",
+      "question": "Quels modèles VW ont le plus de plaintes avec incendie ?",
+      "answer": "Les modèles Volkswagen avec le plus de plaintes concernant un incendie sont les suivants, classés par ordre décroissant du nombre de plaintes :  \n\n- **TIGUAN** : 4 plaintes  \n- **TIGUAN LIMITED** : 3 plaintes  \n- **JETTA** : 3 plaintes  \n- **E-GOLF** : 2 plaintes  \n- **ATLAS CROSS SPORT** : 1 plainte  \n- **PASSAT** : 1 plainte  \n\nCes données proviennent de la base de données des plaintes NHTSA.",
+      "dont_know": false,
+      "latency_ms": 230091,
+      "llm_calls": 3,
+      "tokens": 9291,
+      "prompt_tokens": 8764,
+      "completion_tokens": 527,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages",
+        "query_sql:6 rows"
+      ],
+      "trace_id": null,
+      "expected": [
+        "TIGUAN",
+        "JETTA",
+        "TIGUAN LIMITED"
+      ],
+      "correct": true,
+      "sql": [
+        "SELECT model, count(DISTINCT odi_number) AS complaints FROM fct_complaints WHERE fire GROUP BY model ORDER BY complaints DESC"
+      ]
+    },
+    {
+      "id": "sql-03",
+      "type": "sql",
+      "question": "Combien de campagnes de rappel concernent l'Atlas 2018 ?",
+      "answer": "D'après la base : 17 campagnes de rappel concernent l'Atlas 2018.",
+      "dont_know": false,
+      "latency_ms": 155441,
+      "llm_calls": 3,
+      "tokens": 8078,
+      "prompt_tokens": 7825,
+      "completion_tokens": 253,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages",
+        "query_sql:1 rows"
+      ],
+      "trace_id": null,
+      "expected": [
+        17
+      ],
+      "correct": true,
+      "sql": [
+        "SELECT COUNT(*) AS recall_count FROM gold.fct_recalls WHERE make = 'VOLKSWAGEN' AND model = 'ATLAS' AND model_year = 2018"
+      ]
+    },
+    {
+      "id": "sql-04",
+      "type": "sql",
+      "question": "Combien de rappels liés aux airbags y a-t-il au total ?",
+      "answer": "Il y a au total 21 rappels liés aux airbags d'après la base.",
+      "dont_know": false,
+      "latency_ms": 28512,
+      "llm_calls": 3,
+      "tokens": 3778,
+      "prompt_tokens": 3683,
+      "completion_tokens": 95,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:0 relevant passage",
+        "query_sql:1 rows"
+      ],
+      "trace_id": null,
+      "expected": [
+        13
+      ],
+      "correct": false,
+      "sql": [
+        "SELECT count(*) AS total_recalls FROM fct_recalls WHERE category = 'AIRBAGS'"
+      ]
+    },
+    {
+      "id": "sql-05",
+      "type": "sql",
+      "question": "Quel modèle a le plus de campagnes de rappel ?",
+      "answer": "Le modèle avec le plus de campagnes de rappel est l'ATLAS, avec 33 campagnes d'après la base.",
+      "dont_know": false,
+      "latency_ms": 38550,
+      "llm_calls": 3,
+      "tokens": 3900,
+      "prompt_tokens": 3780,
+      "completion_tokens": 120,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:0 relevant passage",
+        "query_sql:12 rows"
+      ],
+      "trace_id": null,
+      "expected": [
+        "ATLAS"
+      ],
+      "correct": true,
+      "sql": [
+        "SELECT model, COUNT(campaign_number) AS recall_count FROM gold.fct_recalls WHERE make = 'VOLKSWAGEN' GROUP BY model ORDER BY recall_count DESC"
+      ]
+    },
+    {
+      "id": "sql-06",
+      "type": "sql",
+      "question": "Combien de plaintes au total pour la Jetta 2019 ?",
+      "answer": "Il y a 553 plaintes au total pour la Jetta 2019 [d'après la base].",
+      "dont_know": false,
+      "latency_ms": 138753,
+      "llm_calls": 2,
+      "tokens": 5380,
+      "prompt_tokens": 5277,
+      "completion_tokens": 103,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages",
+        "query_sql:1 rows"
+      ],
+      "trace_id": null,
+      "expected": [
+        553
+      ],
+      "correct": true,
+      "sql": [
+        "SELECT count(DISTINCT odi_number) AS total_complaints FROM fct_complaints WHERE make = 'VOLKSWAGEN' AND model = 'JETTA' AND model_year = 2019"
+      ]
+    },
+    {
+      "id": "sql-07",
+      "type": "sql",
+      "question": "Combien de plaintes signalent un accident (crash) pour le Tiguan 2018 ?",
+      "answer": "D'après la base : 3 plaintes signalent un accident (crash) pour le Tiguan 2018.",
+      "dont_know": false,
+      "latency_ms": 135042,
+      "llm_calls": 2,
+      "tokens": 5262,
+      "prompt_tokens": 5156,
+      "completion_tokens": 106,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages",
+        "query_sql:1 rows"
+      ],
+      "trace_id": null,
+      "expected": [
+        5
+      ],
+      "correct": false,
+      "sql": [
+        "SELECT count(DISTINCT odi_number) AS complaints FROM fct_complaints WHERE make = 'VOLKSWAGEN' AND model = 'TIGUAN' AND model_year = 2018 AND fire = TRUE"
+      ]
+    },
+    {
+      "id": "sql-08",
+      "type": "sql",
+      "question": "Quelles sont les 3 catégories de composants avec le plus de plaintes ?",
+      "answer": "Les trois catégories de composants avec le plus de plaintes sont : ENGINE (714 plaintes), ELECTRICAL (617 plaintes) et OTHER (513 plaintes) [d'après la base].",
+      "dont_know": false,
+      "latency_ms": 63616,
+      "llm_calls": 4,
+      "tokens": 5461,
+      "prompt_tokens": 5223,
+      "completion_tokens": 238,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:0 relevant passage",
+        "query_sql:error: Binder Error: Ambiguous reference to column name \"odi_number\" (use: \"b.odi_numbe",
+        "query_sql:3 rows"
+      ],
+      "trace_id": null,
+      "expected": [
+        "ENGINE",
+        "ELECTRICAL",
+        "OTHER"
+      ],
+      "correct": true,
+      "sql": [
+        "SELECT category, COUNT(DISTINCT odi_number) AS complaint_count FROM gold.fct_complaints c JOIN gold.bridge_complaint_component b ON b.odi_number = c.odi_number AND b.vehicle_key = c.vehicle_key GROUP BY category ORDER BY complaint_count DESC LIMIT 3",
+        "SELECT category, COUNT(DISTINCT b.odi_number) AS complaint_count FROM gold.fct_complaints c JOIN gold.bridge_complaint_component b ON b.odi_number = c.odi_number AND b.vehicle_key = c.vehicle_key GROUP BY category ORDER BY complaint_count DESC LIMIT 3"
+      ]
+    },
+    {
+      "id": "sql-09",
+      "type": "sql",
+      "question": "Combien de blessés au total sont déclarés dans les plaintes sur la Passat ?",
+      "answer": "D'après la base : 3 blessés au total sont déclarés dans les plaintes sur la Passat.",
+      "dont_know": false,
+      "latency_ms": 34443,
+      "llm_calls": 3,
+      "tokens": 3826,
+      "prompt_tokens": 3709,
+      "completion_tokens": 117,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:0 relevant passage",
+        "query_sql:1 rows"
+      ],
+      "trace_id": null,
+      "expected": [
+        3
+      ],
+      "correct": true,
+      "sql": [
+        "SELECT sum(c.number_of_injuries) AS total_injuries FROM fct_complaints c WHERE c.make = 'VOLKSWAGEN' AND c.model = 'PASSAT'"
+      ]
+    },
+    {
+      "id": "sql-10",
+      "type": "sql",
+      "question": "Combien de rappels demandent de garer le véhicule (park it) ?",
+      "answer": "D'après la base : 10 rappels demandent de garer le véhicule (park it).",
+      "dont_know": false,
+      "latency_ms": 27492,
+      "llm_calls": 3,
+      "tokens": 3773,
+      "prompt_tokens": 3680,
+      "completion_tokens": 93,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:0 relevant passage",
+        "query_sql:1 rows"
+      ],
+      "trace_id": null,
+      "expected": [
+        4
+      ],
+      "correct": false,
+      "sql": [
+        "SELECT count(*) AS park_it_count FROM gold.fct_recalls WHERE park_it = TRUE"
+      ]
+    },
+    {
+      "id": "sql-11",
+      "type": "sql",
+      "question": "Combien de plaintes freinage pour l'Atlas, toutes années confondues ?",
+      "answer": "D'après la base : il y a 158 plaintes concernant le freinage pour l'Atlas, toutes années confondues.",
+      "dont_know": false,
+      "latency_ms": 44071,
+      "llm_calls": 3,
+      "tokens": 3904,
+      "prompt_tokens": 3745,
+      "completion_tokens": 159,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:0 relevant passage",
+        "query_sql:1 rows"
+      ],
+      "trace_id": null,
+      "expected": [
+        158
+      ],
+      "correct": true,
+      "sql": [
+        "SELECT count(DISTINCT c.odi_number) AS complaints FROM fct_complaints c JOIN bridge_complaint_component b ON b.odi_number = c.odi_number AND b.vehicle_key = c.vehicle_key WHERE b.category = 'BRAKES' AND c.make = 'VOLKSWAGEN' AND c.model = 'ATLAS'"
+      ]
+    },
+    {
+      "id": "sql-12",
+      "type": "sql",
+      "question": "En quelle année a-t-on déposé le plus de plaintes sur la Golf ?",
+      "answer": "D'après la base : 126 plaintes ont été déposées sur la Golf.",
+      "dont_know": false,
+      "latency_ms": 32820,
+      "llm_calls": 3,
+      "tokens": 3807,
+      "prompt_tokens": 3700,
+      "completion_tokens": 107,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:0 relevant passage",
+        "query_sql:1 rows"
+      ],
+      "trace_id": null,
+      "expected": [
+        2019
+      ],
+      "correct": false,
+      "sql": [
+        "SELECT model, count(DISTINCT odi_number) AS complaints FROM fct_complaints WHERE model = 'GOLF' GROUP BY model ORDER BY complaints DESC"
+      ]
+    },
+    {
+      "id": "sql-13",
+      "type": "sql",
+      "question": "Combien de modèles Volkswagen différents ont au moins un rappel ?",
+      "answer": "D'après la base : 12 modèles Volkswagen différents ont au moins un rappel. [S1][S2][S3][S4][S5]",
+      "dont_know": false,
+      "latency_ms": 174263,
+      "llm_calls": 3,
+      "tokens": 9027,
+      "prompt_tokens": 8862,
+      "completion_tokens": 165,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages",
+        "query_sql:1 rows"
+      ],
+      "trace_id": null,
+      "expected": [
+        12
+      ],
+      "correct": true,
+      "sql": [
+        "SELECT COUNT(DISTINCT model) AS model_count FROM gold.fct_recalls WHERE make = 'VOLKSWAGEN'"
+      ]
+    },
+    {
+      "id": "sql-14",
+      "type": "sql",
+      "question": "Combien de plaintes mentionnent un incendie pour l'Atlas Cross Sport ?",
+      "answer": "D'après la base : aucun nombre de plaintes mentionnant un incendie pour l'Atlas Cross Sport n'a été trouvé.  \n[Requête SQL : SELECT count(DISTINCT odi_number) FROM fct_complaints WHERE make = 'VOLKSWAGEN' AND model = 'ATLAS CROSS SPORT' AND fire = TRUE]",
+      "dont_know": false,
+      "latency_ms": 130273,
+      "llm_calls": 2,
+      "tokens": 5184,
+      "prompt_tokens": 5051,
+      "completion_tokens": 133,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:5 passages"
+      ],
+      "trace_id": null,
+      "expected": [
+        1
+      ],
+      "correct": false,
+      "sql": []
+    },
+    {
+      "id": "oos-01",
+      "type": "out_of_scope",
+      "question": "Quels sont les rappels de la Renault Clio ?",
+      "answer": "Je ne sais pas : je n'ai trouvé aucune information fiable sur ce point dans les rappels, plaintes et documents NHTSA indexés.",
+      "dont_know": true,
+      "latency_ms": 12613,
+      "llm_calls": 1,
+      "tokens": 1189,
+      "prompt_tokens": 1156,
+      "completion_tokens": 33,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:0 relevant passage"
+      ],
+      "trace_id": null,
+      "correct": true
+    },
+    {
+      "id": "oos-02",
+      "type": "out_of_scope",
+      "question": "Quelle est la recette de la tarte aux pommes ?",
+      "answer": "Je ne sais pas : je n'ai trouvé aucune information fiable sur ce point dans les rappels, plaintes et documents NHTSA indexés.",
+      "dont_know": true,
+      "latency_ms": 11839,
+      "llm_calls": 1,
+      "tokens": 1191,
+      "prompt_tokens": 1158,
+      "completion_tokens": 33,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:0 relevant passage"
+      ],
+      "trace_id": null,
+      "correct": true
+    },
+    {
+      "id": "oos-03",
+      "type": "out_of_scope",
+      "question": "Quel est le prix d'une Golf neuve en France ?",
+      "answer": "Je ne sais pas : je n'ai trouvé aucune information fiable sur ce point dans les rappels, plaintes et documents NHTSA indexés.",
+      "dont_know": true,
+      "latency_ms": 13330,
+      "llm_calls": 1,
+      "tokens": 1190,
+      "prompt_tokens": 1157,
+      "completion_tokens": 33,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:0 relevant passage"
+      ],
+      "trace_id": null,
+      "correct": true
+    },
+    {
+      "id": "oos-04",
+      "type": "out_of_scope",
+      "question": "Qui a gagné la Coupe du monde de football 2018 ?",
+      "answer": "Je ne sais pas : je n'ai trouvé aucune information fiable sur ce point dans les rappels, plaintes et documents NHTSA indexés.",
+      "dont_know": true,
+      "latency_ms": 13462,
+      "llm_calls": 1,
+      "tokens": 1194,
+      "prompt_tokens": 1161,
+      "completion_tokens": 33,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:0 relevant passage"
+      ],
+      "trace_id": null,
+      "correct": true
+    },
+    {
+      "id": "oos-05",
+      "type": "out_of_scope",
+      "question": "Comment changer une roue de vélo ?",
+      "answer": "Je ne sais pas : je n'ai trouvé aucune information fiable sur ce point dans les rappels, plaintes et documents NHTSA indexés.",
+      "dont_know": true,
+      "latency_ms": 12737,
+      "llm_calls": 1,
+      "tokens": 1186,
+      "prompt_tokens": 1153,
+      "completion_tokens": 33,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:0 relevant passage"
+      ],
+      "trace_id": null,
+      "correct": true
+    },
+    {
+      "id": "oos-06",
+      "type": "out_of_scope",
+      "question": "Quelle est la consommation de carburant d'une Peugeot 208 ?",
+      "answer": "Je ne sais pas : je n'ai trouvé aucune information fiable sur ce point dans les rappels, plaintes et documents NHTSA indexés.",
+      "dont_know": true,
+      "latency_ms": 19340,
+      "llm_calls": 1,
+      "tokens": 1197,
+      "prompt_tokens": 1164,
+      "completion_tokens": 33,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:0 relevant passage"
+      ],
+      "trace_id": null,
+      "correct": true
+    },
+    {
+      "id": "oos-07",
+      "type": "out_of_scope",
+      "question": "Quels sont les horaires d'ouverture d'un concessionnaire Volkswagen à Lyon ?",
+      "answer": "Je ne sais pas : je n'ai trouvé aucune information fiable sur ce point dans les rappels, plaintes et documents NHTSA indexés.",
+      "dont_know": true,
+      "latency_ms": 12791,
+      "llm_calls": 1,
+      "tokens": 1195,
+      "prompt_tokens": 1162,
+      "completion_tokens": 33,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:0 relevant passage"
+      ],
+      "trace_id": null,
+      "correct": true
+    },
+    {
+      "id": "oos-08",
+      "type": "out_of_scope",
+      "question": "What is the capital of Australia?",
+      "answer": "Je ne sais pas : je n'ai trouvé aucune information fiable sur ce point dans les rappels, plaintes et documents NHTSA indexés.",
+      "dont_know": true,
+      "latency_ms": 10053,
+      "llm_calls": 1,
+      "tokens": 1184,
+      "prompt_tokens": 1151,
+      "completion_tokens": 33,
+      "unsupported_numbers": [],
+      "tools": [
+        "search_docs:0 relevant passage"
+      ],
+      "trace_id": null,
+      "correct": true
+    }
+  ]
+}

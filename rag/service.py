@@ -12,12 +12,14 @@ from rag.embeddings import get_embedder
 from rag.llm import OllamaChat
 from rag.retrieval import RetrievalResult, get_reranker, retrieve
 from rag.sql_tool import SqlResult, run_sql
+from rag.tracing import Tracer
 
 
 class Assistant:
     def __init__(self, rag: RagSettings | None = None, settings: AssistantSettings | None = None):
         self.rag = rag or RagSettings.from_env()
         self.settings = settings or AssistantSettings.from_env()
+        self.tracer = Tracer()
 
     @cached_property
     def embedder(self):
@@ -43,7 +45,7 @@ class Assistant:
         finally:
             conn.close()
 
-    def search(self, query: str, mode: str = "hybrid_rerank", k: int | None = None, strategy: str = "structure") -> RetrievalResult:
+    def search(self, query: str, mode: str = "hybrid_rerank", k: int | None = None, strategy: str | None = None) -> RetrievalResult:
         s = self.settings
         with self._conn() as conn:
             return retrieve(
@@ -55,7 +57,7 @@ class Assistant:
                 candidates=s.candidates,
                 reranker=self.reranker if mode == "hybrid_rerank" else None,
                 min_rerank_score=s.min_rerank_score,
-                strategy=strategy,
+                strategy=strategy or s.strategy,
             )
 
     def sql(self, query: str) -> SqlResult:
@@ -64,4 +66,5 @@ class Assistant:
 
     def ask(self, question: str, mode: str = "hybrid_rerank") -> Answer:
         agent = Agent(self.llm, lambda q: self.search(q, mode=mode), self.sql, max_steps=self.settings.max_agent_steps)
-        return agent.ask(question)
+        trace = self.tracer.start(question, mode=mode, model=self.settings.llm_model)
+        return agent.ask(question, trace=trace)

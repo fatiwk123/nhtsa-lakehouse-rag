@@ -27,7 +27,7 @@ ALLOWED_TABLES = {
 ALLOWED_SCHEMAS = {"gold", "lakehouse", ""}  # "" = unqualified, resolved through search_path=gold
 
 SCHEMA_DOC = """\
-gold.fct_recalls (one row per recall campaign x vehicle):
+gold.fct_recalls (one row per recall campaign x vehicle: count DISTINCT campaign_number to count recalls):
   campaign_number, make, model, model_year, component, component_group, category, category_fr,
   report_received_date (DATE), manufacturer, summary, consequence, remedy, park_it (BOOL),
   park_outside (BOOL), over_the_air_update (BOOL)

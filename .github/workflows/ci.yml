@@ -22,19 +22,30 @@ jobs:
         working-directory: dbt
         run: dbt parse --profiles-dir .
 
-  pipeline:
-    # End-to-end run on a small scope: NHTSA API -> bronze Iceberg -> dbt build (models + tests) -> Soda
-    # -> Iceberg -> recall PDFs -> RAG index (pgvector) + sync check.
+  pipeline-and-eval:
+    # End-to-end on the evaluation scope (Volkswagen 2018-2020): NHTSA API -> bronze Iceberg -> dbt build
+    # (models + tests) -> Soda -> Iceberg -> recall PDFs -> RAG index + sync check, then the retrieval
+    # evaluation (no LLM) gated against eval/baseline.json: a quality drop fails the PR.
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
-      - name: Configure a small ingestion scope
-        run: |
-          cp .env.example .env
-          sed -i 's/^NHTSA_MODEL_YEARS=.*/NHTSA_MODEL_YEARS=2019/; s/^NHTSA_MODELS=.*/NHTSA_MODELS=GOLF,JETTA/' .env
+      - name: Configure
+        run: cp .env.example .env
       - name: Run the full pipeline
         run: docker compose up --build --exit-code-from pipeline pipeline
+      - name: Retrieval evaluation (recall@k, MRR, "je ne sais pas" threshold)
+        run: |
+          mkdir -p eval/results && chmod 777 eval/results
+          docker compose run --rm -v "$PWD/eval/results:/app/eval/results" pipeline python -m eval.retrieval_eval
+      - name: Regression gate
+        run: docker compose run --rm -v "$PWD/eval/results:/app/eval/results" pipeline python -m eval.check_regression
+      - name: Upload evaluation results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-results
+          path: eval/results/
       - name: Logs on failure
         if: failure()
         run: docker compose logs --no-color

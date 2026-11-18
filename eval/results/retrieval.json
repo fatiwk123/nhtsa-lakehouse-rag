@@ -1,0 +1,390 @@
+{
+  "dataset": {
+    "doc_questions": 34,
+    "out_of_scope_questions": 8
+  },
+  "configs": {
+    "vector/structure": {
+      "recall@1": 0.6912,
+      "recall@3": 0.8529,
+      "recall@5": 0.9559,
+      "recall@10": 1.0,
+      "mrr": 0.8282,
+      "latency_p50_ms": 114,
+      "latency_p95_ms": 315
+    },
+    "vector/fixed": {
+      "recall@1": 0.6618,
+      "recall@3": 0.8382,
+      "recall@5": 0.9118,
+      "recall@10": 0.9706,
+      "mrr": 0.8167,
+      "latency_p50_ms": 70,
+      "latency_p95_ms": 100
+    },
+    "hybrid/structure": {
+      "recall@1": 0.3824,
+      "recall@3": 0.6471,
+      "recall@5": 0.7647,
+      "recall@10": 0.9706,
+      "mrr": 0.5875,
+      "latency_p50_ms": 115,
+      "latency_p95_ms": 167
+    },
+    "hybrid/fixed": {
+      "recall@1": 0.5735,
+      "recall@3": 0.8382,
+      "recall@5": 0.9412,
+      "recall@10": 1.0,
+      "mrr": 0.7598,
+      "latency_p50_ms": 89,
+      "latency_p95_ms": 135
+    },
+    "hybrid_rerank/structure": {
+      "recall@1": 0.7353,
+      "recall@3": 0.8382,
+      "recall@5": 0.9559,
+      "recall@10": 0.9853,
+      "mrr": 0.8549,
+      "latency_p50_ms": 4909,
+      "latency_p95_ms": 6032
+    },
+    "hybrid_rerank/fixed": {
+      "recall@1": 0.8088,
+      "recall@3": 0.9706,
+      "recall@5": 1.0,
+      "recall@10": 1.0,
+      "mrr": 0.9265,
+      "latency_p50_ms": 6309,
+      "latency_p95_ms": 7476
+    }
+  },
+  "calibration": {
+    "threshold": 0.0,
+    "auc": 1.0,
+    "in_scope_accepted": 1.0,
+    "out_of_scope_rejected": 1.0,
+    "best_threshold": -0.11,
+    "best_youden_j": 1.0,
+    "in_scope_min_score": 1.738,
+    "out_of_scope_max_score": -1.958
+  },
+  "per_question_recall@5": {
+    "doc-01": {
+      "vector/structure": 0.0,
+      "vector/fixed": 1.0,
+      "hybrid/structure": 1.0,
+      "hybrid/fixed": 1.0,
+      "hybrid_rerank/structure": 1.0,
+      "hybrid_rerank/fixed": 1.0
+    },
+    "doc-02": {
+      "vector/structure": 1.0,
+      "vector/fixed": 1.0,
+      "hybrid/structure": 1.0,
+      "hybrid/fixed": 1.0,
+      "hybrid_rerank/structure": 1.0,
+      "hybrid_rerank/fixed": 1.0
+    },
+    "doc-03": {
+      "vector/structure": 1.0,
+      "vector/fixed": 1.0,
+      "hybrid/structure": 0.0,
+      "hybrid/fixed": 1.0,
+      "hybrid_rerank/structure": 1.0,
+      "hybrid_rerank/fixed": 1.0
+    },
+    "doc-04": {
+      "vector/structure": 1.0,
+      "vector/fixed": 1.0,
+      "hybrid/structure": 1.0,
+      "hybrid/fixed": 1.0,
+      "hybrid_rerank/structure": 1.0,
+      "hybrid_rerank/fixed": 1.0
+    },
+    "doc-05": {
+      "vector/structure": 1.0,
+      "vector/fixed": 1.0,
+      "hybrid/structure": 1.0,
+      "hybrid/fixed": 1.0,
+      "hybrid_rerank/structure": 1.0,
+      "hybrid_rerank/fixed": 1.0
+    },
+    "doc-06": {
+      "vector/structure": 1.0,
+      "vector/fixed": 1.0,
+      "hybrid/structure": 1.0,
+      "hybrid/fixed": 1.0,
+      "hybrid_rerank/structure": 1.0,
+      "hybrid_rerank/fixed": 1.0
+    },
+    "doc-07": {
+      "vector/structure": 1.0,
+      "vector/fixed": 1.0,
+      "hybrid/structure": 0.0,
+      "hybrid/fixed": 1.0,
+      "hybrid_rerank/structure": 1.0,
+      "hybrid_rerank/fixed": 1.0
+    },
+    "doc-08": {
+      "vector/structure": 1.0,
+      "vector/fixed": 1.0,
+      "hybrid/structure": 1.0,
+      "hybrid/fixed": 1.0,
+      "hybrid_rerank/structure": 1.0,
+      "hybrid_rerank/fixed": 1.0
+    },
+    "doc-09": {
+      "vector/structure": 1.0,
+      "vector/fixed": 0.0,
+      "hybrid/structure": 1.0,
+      "hybrid/fixed": 1.0,
+      "hybrid_rerank/structure": 1.0,
+      "hybrid_rerank/fixed": 1.0
+    },
+    "doc-10": {
+      "vector/structure": 1.0,
+      "vector/fixed": 1.0,
+      "hybrid/structure": 1.0,
+      "hybrid/fixed": 1.0,
+      "hybrid_rerank/structure": 1.0,
+      "hybrid_rerank/fixed": 1.0
+    },
+    "doc-11": {
+      "vector/structure": 1.0,
+      "vector/fixed": 1.0,
+      "hybrid/structure": 1.0,
+      "hybrid/fixed": 1.0,
+      "hybrid_rerank/structure": 1.0,
+      "hybrid_rerank/fixed": 1.0
+    },
+    "doc-12": {
+      "vector/structure": 1.0,
+      "vector/fixed": 1.0,
+      "hybrid/structure": 0.0,
+      "hybrid/fixed": 1.0,
+      "hybrid_rerank/structure": 1.0,
+      "hybrid_rerank/fixed": 1.0
+    },
+    "doc-13": {
+      "vector/structure": 1.0,
+      "vector/fixed": 1.0,
+      "hybrid/structure": 0.0,
+      "hybrid/fixed": 1.0,
+      "hybrid_rerank/structure": 1.0,
+      "hybrid_rerank/fixed": 1.0
+    },
+    "doc-14": {
+      "vector/structure": 1.0,
+      "vector/fixed": 1.0,
+      "hybrid/structure": 1.0,
+      "hybrid/fixed": 1.0,
+      "hybrid_rerank/structure": 1.0,
+      "hybrid_rerank/fixed": 1.0
+    },
+    "doc-15": {
+      "vector/structure": 1.0,
+      "vector/fixed": 1.0,
+      "hybrid/structure": 1.0,
+      "hybrid/fixed": 1.0,
+      "hybrid_rerank/structure": 1.0,
+      "hybrid_rerank/fixed": 1.0
+    },
+    "doc-16": {
+      "vector/structure": 1.0,
+      "vector/fixed": 1.0,
+      "hybrid/structure": 0.5,
+      "hybrid/fixed": 1.0,
+      "hybrid_rerank/structure": 0.0,
+      "hybrid_rerank/fixed": 1.0
+    },
+    "doc-17": {
+      "vector/structure": 1.0,
+      "vector/fixed": 1.0,
+      "hybrid/structure": 1.0,
+      "hybrid/fixed": 1.0,
+      "hybrid_rerank/structure": 1.0,
+      "hybrid_rerank/fixed": 1.0
+    },
+    "doc-18": {
+      "vector/structure": 1.0,
+      "vector/fixed": 1.0,
+      "hybrid/structure": 1.0,
+      "hybrid/fixed": 1.0,
+      "hybrid_rerank/structure": 1.0,
+      "hybrid_rerank/fixed": 1.0
+    },
+    "doc-19": {
+      "vector/structure": 1.0,
+      "vector/fixed": 1.0,
+      "hybrid/structure": 1.0,
+      "hybrid/fixed": 1.0,
+      "hybrid_rerank/structure": 1.0,
+      "hybrid_rerank/fixed": 1.0
+    },
+    "doc-20": {
+      "vector/structure": 1.0,
+      "vector/fixed": 1.0,
+      "hybrid/structure": 1.0,
+      "hybrid/fixed": 1.0,
+      "hybrid_rerank/structure": 1.0,
+      "hybrid_rerank/fixed": 1.0
+    },
+    "doc-21": {
+      "vector/structure": 1.0,
+      "vector/fixed": 0.0,
+      "hybrid/structure": 0.0,
+      "hybrid/fixed": 1.0,
+      "hybrid_rerank/structure": 1.0,
+      "hybrid_rerank/fixed": 1.0
+    },
+    "doc-22": {
+      "vector/structure": 1.0,
+      "vector/fixed": 1.0,
+      "hybrid/structure": 1.0,
+      "hybrid/fixed": 1.0,
+      "hybrid_rerank/structure": 1.0,
+      "hybrid_rerank/fixed": 1.0
+    },
+    "doc-23": {
+      "vector/structure": 1.0,
+      "vector/fixed": 1.0,
+      "hybrid/structure": 0.0,
+      "hybrid/fixed": 1.0,
+      "hybrid_rerank/structure": 1.0,
+      "hybrid_rerank/fixed": 1.0
+    },
+    "doc-24": {
+      "vector/structure": 1.0,
+      "vector/fixed": 0.0,
+      "hybrid/structure": 1.0,
+      "hybrid/fixed": 0.0,
+      "hybrid_rerank/structure": 1.0,
+      "hybrid_rerank/fixed": 1.0
+    },
+    "doc-25": {
+      "vector/structure": 0.5,
+      "vector/fixed": 1.0,
+      "hybrid/structure": 0.5,
+      "hybrid/fixed": 1.0,
+      "hybrid_rerank/structure": 0.5,
+      "hybrid_rerank/fixed": 1.0
+    },
+    "doc-26": {
+      "vector/structure": 1.0,
+      "vector/fixed": 1.0,
+      "hybrid/structure": 1.0,
+      "hybrid/fixed": 1.0,
+      "hybrid_rerank/structure": 1.0,
+      "hybrid_rerank/fixed": 1.0
+    },
+    "doc-27": {
+      "vector/structure": 1.0,
+      "vector/fixed": 1.0,
+      "hybrid/structure": 0.0,
+      "hybrid/fixed": 0.0,
+      "hybrid_rerank/structure": 1.0,
+      "hybrid_rerank/fixed": 1.0
+    },
+    "doc-28": {
+      "vector/structure": 1.0,
+      "vector/fixed": 1.0,
+      "hybrid/structure": 1.0,
+      "hybrid/fixed": 1.0,
+      "hybrid_rerank/structure": 1.0,
+      "hybrid_rerank/fixed": 1.0
+    },
+    "doc-29": {
+      "vector/structure": 1.0,
+      "vector/fixed": 1.0,
+      "hybrid/structure": 1.0,
+      "hybrid/fixed": 1.0,
+      "hybrid_rerank/structure": 1.0,
+      "hybrid_rerank/fixed": 1.0
+    },
+    "doc-30": {
+      "vector/structure": 1.0,
+      "vector/fixed": 1.0,
+      "hybrid/structure": 1.0,
+      "hybrid/fixed": 1.0,
+      "hybrid_rerank/structure": 1.0,
+      "hybrid_rerank/fixed": 1.0
+    },
+    "doc-31": {
+      "vector/structure": 1.0,
+      "vector/fixed": 1.0,
+      "hybrid/structure": 1.0,
+      "hybrid/fixed": 1.0,
+      "hybrid_rerank/structure": 1.0,
+      "hybrid_rerank/fixed": 1.0
+    },
+    "doc-32": {
+      "vector/structure": 1.0,
+      "vector/fixed": 1.0,
+      "hybrid/structure": 1.0,
+      "hybrid/fixed": 1.0,
+      "hybrid_rerank/structure": 1.0,
+      "hybrid_rerank/fixed": 1.0
+    },
+    "doc-33": {
+      "vector/structure": 1.0,
+      "vector/fixed": 1.0,
+      "hybrid/structure": 1.0,
+      "hybrid/fixed": 1.0,
+      "hybrid_rerank/structure": 1.0,
+      "hybrid_rerank/fixed": 1.0
+    },
+    "doc-34": {
+      "vector/structure": 1.0,
+      "vector/fixed": 1.0,
+      "hybrid/structure": 1.0,
+      "hybrid/fixed": 1.0,
+      "hybrid_rerank/structure": 1.0,
+      "hybrid_rerank/fixed": 1.0
+    }
+  },
+  "top_rerank_scores": {
+    "doc-01": 5.677,
+    "doc-02": 3.267,
+    "doc-03": 4.361,
+    "doc-04": 6.883,
+    "doc-05": 4.866,
+    "doc-06": 6.609,
+    "doc-07": 1.738,
+    "doc-08": 9.531,
+    "doc-09": 2.775,
+    "doc-10": 3.191,
+    "doc-11": 4.564,
+    "doc-12": 2.903,
+    "doc-13": 8.93,
+    "doc-14": 6.41,
+    "doc-15": 6.851,
+    "doc-16": 7.633,
+    "doc-17": 6.361,
+    "doc-18": 7.513,
+    "doc-19": 9.427,
+    "doc-20": 2.535,
+    "doc-21": 4.262,
+    "doc-22": 9.174,
+    "doc-23": 6.734,
+    "doc-24": 2.396,
+    "doc-25": 3.259,
+    "doc-26": 6.412,
+    "doc-27": 2.552,
+    "doc-28": 3.006,
+    "doc-29": 2.667,
+    "doc-30": 3.754,
+    "doc-31": 3.952,
+    "doc-32": 4.903,
+    "doc-33": 3.185,
+    "doc-34": 8.491,
+    "oos-01": -4.409,
+    "oos-02": -5.567,
+    "oos-03": -3.919,
+    "oos-04": -4.997,
+    "oos-05": -1.958,
+    "oos-06": -6.661,
+    "oos-07": -5.971,
+    "oos-08": -6.698
+  }
+}

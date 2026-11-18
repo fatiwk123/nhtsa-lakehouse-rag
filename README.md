@@ -79,7 +79,7 @@ PDFs ──────┘                 │  dbt-duckdb + Soda
 - [x] **Phase 2 — Transformations & qualité** : silver (nettoyage, normalisation constructeur/modèle/année, dédoublonnage), gold (faits rappels, faits plaintes, dimensions véhicule/composant), Soda (nulls, unicité, fraîcheur), tests dbt en CI, assets Dagster + schedule quotidien incrémental. *Livrable : pipeline autonome avec alerte qualité.*
 - [x] **Phase 3 — Indexation RAG** : documents depuis le gold (1 rappel = 1 document) et les PDFs (PyMuPDF), 2 stratégies de chunking, embeddings dans pgvector, BM25 via tsvector, ré-indexation incrémentale par hash de contenu. *Livrable : index toujours synchronisé avec le lakehouse.*
 - [x] **Phase 4 — Assistant** : retrieval hybride (RRF) + reranking cross-encoder, citations obligatoires, « je ne sais pas » sous un seuil (ROC), agent à 2 outils (`search_docs`, `query_sql` en lecture seule sur tables autorisées), FastAPI + Streamlit.
-- [ ] **Phase 5 — Évaluation & observabilité** : jeu de 40–60 questions, recall@k, fidélité/hallucinations (RAGAS ou LLM-juge), exactitude SQL, latence, coût/requête ; comparaison vecteurs seuls / hybride / hybride + reranking ; Langfuse ; éval en CI qui fait échouer la PR si les scores baissent.
+- [x] **Phase 5 — Évaluation & observabilité** : jeu de 40–60 questions, recall@k, fidélité/hallucinations (RAGAS ou LLM-juge), exactitude SQL, latence, coût/requête ; comparaison vecteurs seuls / hybride / hybride + reranking ; Langfuse ; éval en CI qui fait échouer la PR si les scores baissent.
 - [ ] **Phase 6 — Finition** : Terraform (VM + docker-compose) ou démo vidéo, README final (choix, limites, métriques).
 
 ## Choix de conception
@@ -211,6 +211,96 @@ Exemples (Volkswagen 2018-2020, CPU 12 cœurs, sans GPU) :
 
 La latence vient de la génération du LLM sur CPU, à environ 7 tokens/s. Un GPU, ou une API hébergée, la ramènerait à quelques secondes.
 
+## Évaluation et observabilité (phase 5)
+
+Le jeu d'évaluation [`eval/dataset.yaml`](eval/dataset.yaml) compte 56 questions, écrites à partir du corpus Volkswagen 2018-2020 :
+- **34 questions documentaires** (défaut, cause, remède), chacune avec ses rappels pertinents et, pour certaines, les termes que la réponse doit contenir ;
+- **14 questions chiffrées** (comptes, classements, années), chacune avec une requête SQL de référence exécutée au moment de l'éval, pour que la valeur attendue suive les données ;
+- **8 questions hors périmètre** (Renault, recette de cuisine, prix…), auxquelles l'assistant doit répondre « je ne sais pas ».
+
+### Retrieval : vectoriel vs hybride vs hybride + rerank
+
+`python -m eval.retrieval_eval` (sans LLM, en CI). Un passage est pertinent s'il appartient à un rappel attendu.
+
+| Mode | Chunking | Recall@1 | Recall@3 | Recall@5 | Recall@10 | MRR | Latence p50 |
+|---|---|---|---|---|---|---|---|
+| vectoriel | structure | 0,69 | 0,85 | 0,96 | 1,00 | 0,83 | 114 ms |
+| vectoriel | fixed | 0,66 | 0,84 | 0,91 | 0,97 | 0,82 | 70 ms |
+| hybride (RRF) | structure | 0,38 | 0,65 | 0,76 | 0,97 | 0,59 | 115 ms |
+| hybride (RRF) | fixed | 0,57 | 0,84 | 0,94 | 1,00 | 0,76 | 89 ms |
+| hybride + rerank | structure | 0,74 | 0,84 | 0,96 | 0,99 | 0,85 | 4,9 s |
+| **hybride + rerank** | **fixed** | **0,81** | **0,97** | **1,00** | **1,00** | **0,93** | 6,3 s |
+
+Ce que montre l'éval :
+- **Le reranking apporte le plus** : MRR de 0,83 à 0,93, et le bon rappel est en tête 81 % du temps au lieu de 69 %.
+- **La fusion RRF seule dégrade le vectoriel.** Les questions sont en français, la branche plein texte en anglais : elle n'accroche que des mots communs (« Golf », « 2018 ») et pollue la fusion. Le cross-encoder multilingue corrige ce bruit. Piste d'amélioration : traduire la requête avant la branche plein texte.
+- **Le chunking `fixed` l'emporte une fois reranké**, d'où `RAG_STRATEGY=fixed` par défaut. Le chunking `structure` donne des chunks plus courts sur les fiches de rappel.
+- **Le seuil du « je ne sais pas » est calibré sur l'éval** : AUC = 1,00 entre questions documentaires et hors périmètre. La question pertinente la plus faible obtient +1,74, la question hors sujet la plus forte −1,96. Le seuil à 0 est au milieu de cet écart, et le meilleur seuil (Youden) vaut −0,11.
+
+Le choix de la stratégie et du seuil se fait sur ces 56 questions : c'est un petit jeu, et un jeu de test séparé serait plus rigoureux.
+
+### Assistant de bout en bout
+
+`python -m eval.agent_eval [--judge]`, en local, car environ 2 h sur CPU pour les 56 questions. LLM `qwen3:4b-instruct`. Résultats bruts : [`eval/results/agent.json`](eval/results/agent.json).
+
+| Métrique | v1 | v2 |
+|---|---|---|
+| Exactitude globale | 84 % | **88 %** |
+| Documents : réponse correcte et citée | 88 % | 91 % |
+| Documents : précision des citations | 99 % | 98 % |
+| SQL : valeur exacte | 64 % | 71 % |
+| Hors périmètre : « je ne sais pas » | 100 % | 100 % |
+| Réponses avec un nombre absent des résultats d'outils | 11 % | 11 % |
+| Latence p50 / p95 | 130 s / 179 s | 135 s / 187 s |
+| Tokens / question (appels LLM) | 3 236 (1,46) | 3 407 (1,52) |
+| Coût / question | 0 $ (local) | 0 $ (local) |
+
+L'écart entre v1 et v2 vient de l'analyse des 9 échecs de la v1 :
+- **SQL** : le modèle comptait `count(*)` sur `fct_recalls`, qui a une ligne par campagne et par véhicule. Le schéma donné au LLM précise maintenant de compter `DISTINCT campaign_number` (13 rappels airbag au lieu de 21).
+- **Garde-fou** : une question chiffrée sans requête SQL réussie reçoit désormais « je ne sais pas » plutôt qu'un nombre tiré de quelques passages.
+- **Notation** : la réponse « vidage des étriers » au rappel 18V369000 était juste, mais la liste de termes attendus ne prévoyait que « purge » ou « bleed ». La liste a été élargie ; c'est une correction de la notation, pas du système.
+- **Relance** : quand le modèle refuse alors que des passages pertinents lui ont été donnés, il a droit à une relance.
+
+Les échecs restants viennent tous du modèle de 4 milliards de paramètres, pas du retrieval :
+- **3 refus à tort** : le bon rappel est en tête des passages et l'information figure dans le texte, mais le modèle refuse quand même, y compris après la relance. Ce mode d'échec est sûr : il refuse au lieu d'inventer.
+- **4 requêtes SQL fausses** : `fire` au lieu de `crash`, un groupement par modèle au lieu de par année, `count(*)` malgré la consigne.
+
+Un modèle plus grand ou un GPU sont les leviers évidents.
+
+La fidélité est mesurée par trois indicateurs :
+- les citations vérifiées : 98 % pointent vers un rappel attendu ;
+- les nombres absents de tout résultat d'outil (`unsupported_numbers`) ;
+- un **LLM-juge** optionnel (`--judge`), qui vérifie chaque affirmation contre le contexte fourni au modèle (`Answer.context`). Il n'est pas activé par défaut, car il ajoute un appel LLM par réponse sur CPU.
+
+Pour estimer le coût avec un modèle hébergé, il suffit de renseigner `EVAL_PRICE_INPUT_PER_M` et `EVAL_PRICE_OUTPUT_PER_M`.
+
+### Éval en CI
+
+Le job `pipeline-and-eval` procède en trois étapes :
+1. il reconstruit tout depuis zéro sur le périmètre de l'éval : API NHTSA, lakehouse, PDFs et index ;
+2. il lance l'éval de retrieval ;
+3. il compare 5 métriques à [`eval/baseline.json`](eval/baseline.json) : recall@1, recall@5 et MRR de la config de production, et les deux taux du seuil.
+
+Une baisse de plus de 0,03, soit une question sur 34, **fait échouer la PR**. Le rapport s'affiche dans le résumé du job GitHub Actions et les résultats sont publiés en artefact. Après une amélioration voulue, `python -m eval.check_regression --update` met la baseline à jour.
+
+L'éval avec LLM n'est pas en CI : à 2 min par question sur un runner CPU, ce serait trop lent. Le retrieval, déterministe, est le garde-fou automatique ; la qualité des réponses se mesure en local.
+
+### Langfuse
+
+Langfuse est optionnel :
+
+```bash
+docker compose --profile observability up -d langfuse   # http://localhost:3001 (admin@langfuse.local / admin12345)
+# puis dans .env : LANGFUSE_PUBLIC_KEY=pk-lf-local, LANGFUSE_SECRET_KEY=sk-lf-local, et redémarrer l'api
+```
+
+Chaque question devient une trace :
+- un span par outil (`search_docs`, `query_sql`), avec son entrée et sa sortie ;
+- une génération par appel LLM, avec le prompt, la réponse et les tokens ;
+- en métadonnées : « je ne sais pas », citations, nombres non soutenus, latence.
+
+Langfuse v2 réutilise le Postgres de la stack, dans un schéma dédié. Sans les clés, le traçage est désactivé et rien ne change.
+
 ## Limites connues
 
 - L'API NHTSA est publique mais limite les rafales : le client espace ses requêtes (`NHTSA_MIN_INTERVAL_S`), utilise 2 workers et Dagster n'exécute qu'une étape NHTSA à la fois.
@@ -230,18 +320,27 @@ tests/          tests unitaires (pytest, en CI)
 dbt/            modèles silver / gold, seeds, tests
 quality/        contrôles Soda
 orchestration/  assets et schedules Dagster
-rag/            documents, chunking, embeddings, index pgvector incrémental, recherche
-rag/            + retrieval hybride (RRF, rerank), agent, outils search_docs / query_sql, client Ollama
+rag/            documents, chunking, embeddings, index pgvector incrémental, retrieval hybride (RRF, rerank),
+                agent, outils search_docs / query_sql, client Ollama, traçage Langfuse
 api/            API FastAPI (/search, /ask, /health)
 ui/             application Streamlit
-eval/           jeu de test et scripts d'évaluation
+eval/           jeu d'évaluation (56 questions), éval retrieval / assistant, garde-fou de régression
 infra/          init Postgres, Terraform
 data/pdfs/      PDFs techniques (non versionnés)
 ```
 
 ## Métriques
 
-*À venir (phase 5).*
+| | |
+|---|---|
+| Lakehouse (VW 2018-2020) | 141 rappels, 3 242 plaintes, 61 campagnes, 175 PDFs, 49 nœuds dbt, 20 contrôles Soda |
+| Index | 236 documents, 1 824 chunks ; 2ᵉ synchronisation sans changement en 2,8 s |
+| Retrieval (hybride + rerank, `fixed`) | recall@5 = 1,00, MRR = 0,93 |
+| « Je ne sais pas » | 8/8 questions hors périmètre refusées, AUC du seuil = 1,00 |
+| Assistant (56 questions, LLM local 4B) | 88 % d'exactitude, 98 % de citations correctes, 0 $ par question |
+| Latence (CPU, sans GPU) | ~2 min 15 par question (p50) |
+
+Détail et méthode : section *Évaluation et observabilité*.
 
 ## Auteure
 

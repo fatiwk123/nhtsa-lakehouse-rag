@@ -44,3 +44,5 @@ dagster_home/history/
 .DS_Store
 Thumbs.db
 dbt/.user.yml
+eval/results/agent_rows.json
+eval/results/agent.log

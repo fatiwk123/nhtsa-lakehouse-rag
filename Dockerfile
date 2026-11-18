@@ -29,6 +29,7 @@ COPY orchestration/ ./orchestration/
 COPY rag/ ./rag/
 COPY api/ ./api/
 COPY ui/ ./ui/
+COPY eval/ ./eval/
 
 # Build the dbt manifest at image build time (needed by dagster-dbt; no DB connection).
 RUN cd dbt && dbt parse --profiles-dir . --quiet && mkdir -p /data/duckdb

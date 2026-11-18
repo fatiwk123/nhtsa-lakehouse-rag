@@ -33,7 +33,7 @@ class SearchRequest(BaseModel):
     query: str = Field(min_length=2, max_length=500)
     mode: Mode = "hybrid_rerank"
     k: int = Field(5, ge=1, le=50)
-    strategy: Literal["structure", "fixed"] = "structure"
+    strategy: Literal["structure", "fixed"] | None = None  # default: RAG_STRATEGY
 
 
 class AskRequest(BaseModel):
@@ -50,6 +50,7 @@ def health() -> dict:
         "index": index,
         "llm": {"model": assistant.settings.llm_model, "available": assistant.llm.available()},
         "reranker": assistant.settings.reranker_model,
+        "tracing": assistant.tracer.enabled,
     }
 
 
@@ -63,4 +64,6 @@ def search(req: SearchRequest) -> dict:
 def ask(req: AskRequest) -> dict:
     if not assistant.llm.available():
         raise HTTPException(503, f"LLM {assistant.settings.llm_model} not available on Ollama (is ollama-pull done?)")
-    return assistant.ask(req.question, mode=req.mode).to_dict()
+    answer = assistant.ask(req.question, mode=req.mode).to_dict()
+    answer.pop("context")  # raw tool outputs: kept for evaluation, not needed by clients
+    return answer

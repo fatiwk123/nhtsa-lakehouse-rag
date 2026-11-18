@@ -53,6 +53,7 @@ class AssistantSettings:
     reranker_model: str
     candidates: int  # chunks per retrieval leg before fusion / reranking
     top_k: int  # passages handed to the LLM
+    strategy: str  # chunking strategy searched by the assistant ("fixed" won the phase 5 eval)
     min_rerank_score: float  # below this (cross-encoder logit) the best passage is "not relevant"
     ollama_url: str
     llm_model: str
@@ -69,6 +70,7 @@ class AssistantSettings:
             reranker_model=env("RERANKER_MODEL", "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1"),
             candidates=int(env("RAG_CANDIDATES", "30")),
             top_k=int(env("RAG_TOP_K", "5")),
+            strategy=env("RAG_STRATEGY", "fixed"),
             min_rerank_score=float(env("RAG_MIN_RERANK_SCORE", "0.0")),
             ollama_url=env("OLLAMA_URL", "http://localhost:11434"),
             llm_model=env("OLLAMA_MODEL", "qwen3:4b-instruct"),
